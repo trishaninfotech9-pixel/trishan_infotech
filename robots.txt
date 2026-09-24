@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://trishaninfotech.in/sitemap.xml
