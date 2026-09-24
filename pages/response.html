@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responses | Trishan Infotech, Chinsurah Hooghly</title>
+<link rel="icon" type="image/png" href="../images/logo.png">
+<meta name="description" content="Responses to your Trishan Infotech complaints.">
+<meta name="theme-color" content="#0C4A6E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link rel="stylesheet" href="../styles/style.css">
+<script src="../scripts/script.js" defer></script>
+<script src="../scripts/response.js" defer></script>
+</head>
+<body class="bg-white text-navy-900 min-h-screen flex flex-col">
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<!-- NAVBAR (shared: components/header.html) -->
+<div data-component="header" data-page="response"></div>
+
+<section class="max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14 w-full">
+  <div class="max-w-[560px] w-full mx-auto border border-navy-100 rounded p-5 sm:p-6" data-animate="fade-up">
+    <div class="w-9 h-9 rounded bg-navy-50 flex items-center justify-center mb-3 mx-auto">
+      <i class="bi bi-chat-left-text text-navy text-lg"></i>
+    </div>
+    <h1 class="hero-title text-xl sm:text-2xl font-extrabold text-center text-gradient mb-1.5">Responses</h1>
+    <p class="hero-lead text-[13px] text-navy-900/70 text-center mb-4">Hi <span id="respName">User</span>, replies from our support team will appear here.</p>
+    <div id="responseList" class="space-y-3"></div>
+  </div>
+</section>
+
+<!-- FOOTER (shared: components/footer.html) -->
+<div data-component="footer" class="mt-auto"></div>
+
+</body>
+</html>

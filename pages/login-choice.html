@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | Trishan Infotech, Chinsurah Hooghly</title>
+<link rel="icon" type="image/png" href="../images/logo.png">
+<meta name="description" content="Choose User login or Admin login for your Trishan Infotech account.">
+<meta name="theme-color" content="#0C4A6E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link rel="stylesheet" href="../styles/style.css">
+<script src="../scripts/script.js" defer></script>
+</head>
+<body class="bg-white text-navy-900 min-h-screen flex flex-col">
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<!-- NAVBAR (shared: components/header.html) -->
+<div data-component="header" data-page="login"></div>
+
+<!-- LOGIN CHOICE -->
+<section class="w-full max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14 flex-1">
+  <div class="max-w-2xl mx-auto text-center mb-10" data-animate="fade-up">
+    <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-gradient mb-3">Choose login type</h1>
+    <p class="hero-lead text-sm text-navy-900/70">Select how you want to login to continue.</p>
+  </div>
+  <div class="grid sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
+    <a href="login.html" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block text-center" data-animate="fade-up" data-delay="0">
+      <div class="w-11 h-11 rounded bg-navy-50 flex items-center justify-center mb-6 mx-auto">
+        <i class="bi bi-person text-navy text-xl"></i>
+      </div>
+      <h2 class="font-bold text-lg text-navy mb-3">User Login</h2>
+      <p class="text-sm text-navy-900/80 leading-relaxed mb-5">Login with your phone number or email to submit and track complaints.</p>
+      <span class="text-sm font-semibold text-gold-600">Continue →</span>
+    </a>
+    <a href="admin.html" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block text-center" data-animate="fade-up" data-delay="100">
+      <div class="w-11 h-11 rounded bg-navy-50 flex items-center justify-center mb-6 mx-auto">
+        <i class="bi bi-shield-lock text-navy text-xl"></i>
+      </div>
+      <h2 class="font-bold text-lg text-navy mb-3">Admin Login</h2>
+      <p class="text-sm text-navy-900/80 leading-relaxed mb-5">Login with your admin email to manage complaints and responses.</p>
+      <span class="text-sm font-semibold text-gold-600">Continue →</span>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER (shared: components/footer.html) -->
+<div data-component="footer" class="mt-auto"></div>
+
+</body>
+</html>

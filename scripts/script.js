@@ -93,17 +93,30 @@ if (window.emailjs && EMAILJS.PUBLIC_KEY !== 'YOUR_EMAILJS_PUBLIC_KEY') {
   window.emailjs.init({ publicKey: EMAILJS.PUBLIC_KEY });
 }
 
-// === Shared components (components/header.html, components/footer.html) ===
+// === Shared components (components/header.html, components/header-auth.html, components/footer.html) ===
 // Pages hold <div data-component="header|footer"> placeholders; this injects the
 // shared markup once, so header/footer are edited in one place. Works over
 // http(s) — e.g. Live Preview or any host — but not via file:// browsing.
+// Logged-in users get components/header-auth.html (Complaint / Response / Logout).
 async function loadComponents() {
   const inPages = location.pathname.replace(/\\/g, '/').indexOf('/pages/') !== -1;
   const base = inPages ? '../' : '';
+  let loggedIn = false;
+  let adminOnly = false;
+  try {
+    loggedIn = !!JSON.parse(localStorage.getItem('trishan_user') || 'null');
+    adminOnly = !loggedIn && !!JSON.parse(localStorage.getItem('trishan_admin') || 'null');
+    loggedIn = loggedIn || adminOnly;
+  } catch (e) { loggedIn = false; }
+  // Auth header only inside the account area; public pages (home, services, …) keep the public navbar.
+  const path = location.pathname.replace(/\\/g, '/');
+  const isAuthPage = /\/pages\/(users|response|admin-panel)\.html$/.test(path);
+  const isAdminPage = /\/pages\/admin-panel\.html$/.test(path);
+  const useAuthHeader = loggedIn && isAuthPage;
   const slot = (name) => document.querySelector('[data-component="' + name + '"]');
   if (!slot('header') && !slot('footer') && !slot('cta')) return;
   const res = await Promise.all([
-    fetch(base + 'components/header.html'),
+    fetch(base + (isAdminPage ? 'components/header-admin.html' : (useAuthHeader ? 'components/header-auth.html' : 'components/header.html'))),
     fetch(base + 'components/footer.html'),
     fetch(base + 'components/cta.html'),
   ]);
@@ -117,6 +130,7 @@ async function loadComponents() {
     if (current) {
       document.querySelectorAll('[data-nav="' + current + '"]').forEach((link) => link.classList.add('nav-active'));
     }
+    updateAuthNav(base, current, inPages, loggedIn);
   }
   const footerSlot = slot('footer');
   if (footerSlot) footerSlot.outerHTML = footerHTML;
@@ -126,7 +140,27 @@ async function loadComponents() {
   if (window.__watchReveals) window.__watchReveals(document);
 }
 
-// Professional animations with local Anime.js (node_modules/animejs/dist/bundles/anime.umd.min.js)
+// === Auth navbar wiring: header-auth.html is injected for logged-in users;
+// here we only redirect login pages and wire the shared Logout button. ===
+function updateAuthNav(base, current, inPages, loggedIn) {
+  const path = location.pathname.replace(/\\/g, '/');
+  const pagesPrefix = inPages ? '' : 'pages/';
+  if (loggedIn && (path.endsWith('/login.html') || path.endsWith('/create_account.html') || path.endsWith('/login-choice.html'))) {
+    location.href = pagesPrefix + (adminOnly ? 'admin-panel.html' : 'users.html');
+    return;
+  }
+  if (!loggedIn) return;
+  document.querySelectorAll('[data-logout]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      try { localStorage.removeItem('trishan_user'); localStorage.removeItem('trishan_admin'); } catch (err) {}
+      document.body.classList.remove('menu-open');
+      location.href = base + 'index.html';
+    });
+  });
+}
+
+// Professional animations with Anime.js 4 via CDN (jsdelivr)
 function initMotion() {
   const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (REDUCED || !window.anime) {
