@@ -21,9 +21,14 @@ try {
   if (!$stmt->fetch()) json(['ok' => false, 'error' => 'Admin not found.'], 401);
 
   if ($project_id > 0) {
+    $stmt = $pdo->prepare('SELECT user_id, project_name FROM projects WHERE id = ? LIMIT 1');
+    $stmt->execute([$project_id]);
+    $proj = $stmt->fetch();
+    if (!$proj) json(['ok' => false, 'error' => 'Project not found.'], 404);
     $stmt = $pdo->prepare('DELETE FROM projects WHERE id = ?');
     $stmt->execute([$project_id]);
-    if ($stmt->rowCount() === 0) json(['ok' => false, 'error' => 'Project not found.'], 404);
+    $stmt = $pdo->prepare('DELETE FROM project_details WHERE user_id = ? AND LOWER(project_name) = LOWER(?)');
+    $stmt->execute([$proj['user_id'], $proj['project_name']]);
     json(['ok' => true, 'message' => 'Project deleted.']);
   }
 

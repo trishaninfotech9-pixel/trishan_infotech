@@ -10,9 +10,11 @@ if ($user_id <= 0) json(['ok' => false, 'error' => 'Login required.'], 401);
 
 try {
   $pdo = db();
-  $stmt = $pdo->prepare('SELECT id FROM users WHERE id = ? LIMIT 1');
+  $stmt = $pdo->prepare('SELECT id, first_name, middle_name, last_name, email, phone FROM users WHERE id = ? LIMIT 1');
   $stmt->execute([$user_id]);
-  if (!$stmt->fetch()) json(['ok' => false, 'error' => 'User not found.'], 401);
+  $account = $stmt->fetch();
+  if (!$account) json(['ok' => false, 'error' => 'User not found.'], 401);
+  $uname = trim(implode(' ', array_filter([$account['first_name'], $account['middle_name'], $account['last_name']])));
 
   $stmt = $pdo->prepare('SELECT id, project_name, details, created_at FROM projects WHERE user_id = ? ORDER BY id DESC');
   $stmt->execute([$user_id]);
@@ -32,17 +34,35 @@ try {
     if (!isset($issueDetails[$key])) $issueDetails[$key] = $row['description'];
   }
 
+  // Budget per project name from project_details snapshots.
+  $stmt = $pdo->prepare('SELECT project_name, budget FROM project_details WHERE user_id = ?');
+  $stmt->execute([$user_id]);
+  $budgets = [];
+  foreach ($stmt->fetchAll() as $row) { $budgets[strtolower(trim($row['project_name']))] = $row['budget']; }
+
+  // project_details row id per project name (for the ID column).
+  $stmt = $pdo->prepare('SELECT id, project_name FROM project_details WHERE user_id = ?');
+  $stmt->execute([$user_id]);
+  $pdIds = [];
+  foreach ($stmt->fetchAll() as $row) { $pdIds[strtolower(trim($row['project_name']))] = $row['id']; }
+
   $seen = [];
   foreach ($assigned as &$p) {
     $p['source'] = 'assigned';
-    $seen[strtolower(trim($p['project_name']))] = true;
+    $key = strtolower(trim($p['project_name']));
+    $seen[$key] = true;
+    $p['budget'] = $budgets[$key] ?? null;
+    $p['pd_id'] = $pdIds[$key] ?? null;
+    $p['username'] = $uname;
+    $p['email'] = $account['email'];
+    $p['phone_no'] = $account['phone'];
   }
   unset($p);
   foreach ($fromComplaints as $c) {
     $key = strtolower(trim($c['project_name']));
     if ($key === '' || isset($seen[$key])) continue;
     $seen[$key] = true;
-    $assigned[] = ['id' => 0, 'project_name' => $c['project_name'], 'details' => $issueDetails[$key] ?? '', 'created_at' => $c['created_at'], 'source' => 'complaint'];
+    $assigned[] = ['id' => 0, 'pd_id' => $pdIds[$key] ?? null, 'username' => $uname, 'email' => $account['email'], 'phone_no' => $account['phone'], 'project_name' => $c['project_name'], 'details' => $issueDetails[$key] ?? '', 'budget' => $budgets[$key] ?? null, 'created_at' => $c['created_at'], 'source' => 'complaint'];
   }
   json(['ok' => true, 'projects' => $assigned]);
 } catch (PDOException $e) {

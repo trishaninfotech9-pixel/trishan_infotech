@@ -14,7 +14,7 @@ try {
   $stmt->execute([$user_id]);
   if (!$stmt->fetch()) json(['ok' => false, 'error' => 'User not found.'], 401);
 
-  $stmt = $pdo->prepare('SELECT id, project_name, created_at FROM complaints WHERE user_id = ? ORDER BY id DESC');
+  $stmt = $pdo->prepare('SELECT id, project_name, is_solved, created_at FROM complaints WHERE user_id = ? ORDER BY id DESC');
   $stmt->execute([$user_id]);
   $complaints = $stmt->fetchAll();
 

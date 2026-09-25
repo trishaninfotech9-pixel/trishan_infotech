@@ -109,6 +109,27 @@ function db() {
       UNION
       SELECT c.user_id, TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) AS username, c.project_name, '' AS details, 'complaint' AS source, MIN(c.created_at) AS created_at
       FROM complaints c JOIN users u ON u.id = c.user_id GROUP BY c.user_id, c.project_name");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS project_details (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL DEFAULT 0,
+      username VARCHAR(150) NOT NULL DEFAULT '',
+      email VARCHAR(100) NOT NULL DEFAULT '',
+      phone_no VARCHAR(15) NOT NULL DEFAULT '',
+      project_name VARCHAR(150) NOT NULL,
+      project_details TEXT NOT NULL,
+      budget DECIMAL(12,2) NULL DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+    try {
+      $pdo->exec("ALTER TABLE project_details ADD COLUMN user_id INT NOT NULL DEFAULT 0");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
+    try {
+      $pdo->exec("ALTER TABLE project_details ADD UNIQUE KEY uq_pd_user_project (user_id, project_name)");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21' && ($e->errorInfo[1] ?? 0) != 1061) throw $e;
+    }
   }
   return $pdo;
 }

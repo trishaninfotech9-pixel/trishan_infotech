@@ -12,6 +12,12 @@ $admin_id = (int)($in['admin_id'] ?? 0);
 $user_id = (int)($in['user_id'] ?? 0);
 $project = trim((string)($in['project_name'] ?? ''));
 $details = trim((string)($in['details'] ?? ''));
+$budgetRaw = trim((string)($in['budget'] ?? ''));
+$budget = null;
+if ($budgetRaw !== '') {
+  if (!is_numeric($budgetRaw) || (float)$budgetRaw < 0) json(['ok' => false, 'error' => 'Budget must be a positive number.'], 400);
+  $budget = round((float)$budgetRaw, 2);
+}
 
 if ($admin_id <= 0) json(['ok' => false, 'error' => 'Admin login required.'], 401);
 if ($user_id <= 0) json(['ok' => false, 'error' => 'Select a user first.'], 400);
@@ -23,7 +29,7 @@ try {
   $stmt = $pdo->prepare('SELECT id FROM admins WHERE id = ? LIMIT 1');
   $stmt->execute([$admin_id]);
   if (!$stmt->fetch()) json(['ok' => false, 'error' => 'Admin not found.'], 401);
-  $stmt = $pdo->prepare('SELECT id, first_name, middle_name, last_name FROM users WHERE id = ? LIMIT 1');
+  $stmt = $pdo->prepare('SELECT id, first_name, middle_name, last_name, email, phone FROM users WHERE id = ? LIMIT 1');
   $stmt->execute([$user_id]);
   $account = $stmt->fetch();
   if (!$account) json(['ok' => false, 'error' => 'User not found.'], 404);
@@ -32,11 +38,14 @@ try {
   try {
     $stmt = $pdo->prepare('INSERT INTO projects (user_id, username, project_name, details) VALUES (?, ?, ?, ?)');
     $stmt->execute([$user_id, $username, $project, $details]);
+    $project_id = (int)$pdo->lastInsertId();
   } catch (PDOException $e) {
     if ($e->getCode() === '23000') json(['ok' => false, 'error' => 'This project already exists for the user.'], 409);
     throw $e;
   }
-  json(['ok' => true, 'message' => 'Project added.', 'project_id' => (int)$pdo->lastInsertId()]);
+  $stmt = $pdo->prepare('INSERT INTO project_details (user_id, username, email, phone_no, project_name, project_details, budget) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE username = VALUES(username), email = VALUES(email), phone_no = VALUES(phone_no), project_details = VALUES(project_details), budget = VALUES(budget)');
+  $stmt->execute([$user_id, $username, $account['email'], $account['phone'], $project, $details, $budget]);
+  json(['ok' => true, 'message' => 'Project added.', 'project_id' => $project_id]);
 } catch (PDOException $e) {
   json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
 }

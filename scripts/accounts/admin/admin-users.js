@@ -12,6 +12,7 @@
     const form = document.getElementById('addProjectForm');
     const input = document.getElementById('projectName');
     const detailsInput = document.getElementById('projectDetails');
+    const budgetInput = document.getElementById('projectBudget');
     const msg = document.getElementById('projectMsg');
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const fmtDate = (d) => {
@@ -91,7 +92,7 @@
         const res = await fetch('../../../api/accounts/admin/add-project.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ admin_id: admin.id, user_id: uid, project_name: input.value.trim(), details: detailsInput.value.trim() }),
+          body: JSON.stringify({ admin_id: admin.id, user_id: uid, project_name: input.value.trim(), details: detailsInput.value.trim(), budget: budgetInput.value.trim() }),
         });
         const body = await res.json().catch(() => null);
         if (body && body.ok) {
@@ -100,6 +101,7 @@
           msg.classList.remove('hidden');
           input.value = '';
           detailsInput.value = '';
+          budgetInput.value = '';
           await loadProjects();
         } else {
           msg.textContent = (body && body.error) || 'Could not add project.';

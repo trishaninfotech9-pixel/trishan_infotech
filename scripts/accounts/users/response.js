@@ -42,7 +42,10 @@
         return '<div class="border border-navy-100 rounded p-4 overflow-hidden">' +
           '<div class="flex items-center justify-between gap-2 mb-1">' +
             '<p class="text-sm font-bold text-navy break-words min-w-0">' + esc(c.project_name) + '</p>' +
-            '<span class="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (replied ? 'text-green-700 bg-green-50' : 'text-gold-600 bg-navy-50') + '">' + (replied ? 'Replied' : 'Pending') + '</span>' +
+            '<span class="flex items-center gap-1.5 shrink-0">' +
+              '<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (replied ? 'text-green-700 bg-green-50' : 'text-gold-600 bg-navy-50') + '">' + (replied ? 'Replied' : 'Pending') + '</span>' +
+              '<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (+c.is_solved === 1 ? 'text-green-700 bg-green-50' : 'text-red-600 bg-red-50') + '">' + (+c.is_solved === 1 ? 'Solved' : 'Unsolved') + '</span>' +
+            '</span>' +
           '</div>' +
           '<p class="text-[11px] text-navy-900/50 mb-2">' + esc(fmtDate(c.created_at)) + '</p>' +
           '<ul class="space-y-1 mb-3">' + issues + '</ul>' +
