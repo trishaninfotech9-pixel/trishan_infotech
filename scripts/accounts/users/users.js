@@ -20,10 +20,24 @@
       document.getElementById('todayDate').textContent = new Date().toDateString();
     }
 
-    // ---- Prefill details from logged-in user ----
+    // ---- Prefill details from logged-in user (locked) ----
     document.getElementById('cFullName').value = full;
     document.getElementById('cEmail').value = user.email || '';
     document.getElementById('cPhone').value = user.phone || '';
+    ['cFullName', 'cEmail', 'cPhone'].forEach((id) => {
+      const el = document.getElementById(id);
+      el.readOnly = true;
+      el.classList.add('bg-navy-50');
+    });
+
+    // Project preselected from the Projects page (always locked).
+    const params = new URLSearchParams(location.search);
+    const preProject = (params.get('project') || '').trim().slice(0, 150);
+    if (!preProject) { location.href = 'projects.html'; return; }
+    const projectEl = document.getElementById('cProject');
+    projectEl.value = preProject;
+    projectEl.readOnly = true;
+    projectEl.classList.add('bg-navy-50');
 
     // ---- Issue blocks (adapted from reference, site-styled with bootstrap icons) ----
     const container = document.getElementById('issuesContainer');
@@ -123,7 +137,7 @@
           note.style.color = '';
           note.innerHTML = '<i class="bi bi-check-circle me-1"></i>Your complaint has been submitted. Our team will get back to you shortly.';
           note.classList.remove('hidden');
-          document.getElementById('cProject').value = '';
+          if (!preProject) document.getElementById('cProject').value = '';
           container.innerHTML = '';
           issueCount = 0;
           addBlock();

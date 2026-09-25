@@ -82,6 +82,33 @@ function db() {
     }
     $pdo->exec("UPDATE complaint_issues i JOIN complaints c ON c.id = i.complaint_id SET i.username = c.username WHERE i.username = ''");
     $pdo->exec("UPDATE complaint_responses r JOIN complaints c ON c.id = r.complaint_id SET r.username = c.username WHERE r.username = ''");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS projects (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      username VARCHAR(150) NOT NULL DEFAULT '',
+      project_name VARCHAR(150) NOT NULL,
+      details TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_user_project (user_id, project_name),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )");
+    try {
+      $pdo->exec("ALTER TABLE projects ADD COLUMN details TEXT NOT NULL");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
+    try {
+      $pdo->exec("ALTER TABLE projects ADD COLUMN username VARCHAR(150) NOT NULL DEFAULT ''");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
+    $pdo->exec("UPDATE projects p JOIN users u ON u.id = p.user_id SET p.username = TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) WHERE p.username = ''");
+    $pdo->exec("CREATE OR REPLACE VIEW user_all_projects AS
+      SELECT p.user_id, TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) AS username, p.project_name, p.details, 'assigned' AS source, p.created_at
+      FROM projects p JOIN users u ON u.id = p.user_id
+      UNION
+      SELECT c.user_id, TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) AS username, c.project_name, '' AS details, 'complaint' AS source, MIN(c.created_at) AS created_at
+      FROM complaints c JOIN users u ON u.id = c.user_id GROUP BY c.user_id, c.project_name");
   }
   return $pdo;
 }
