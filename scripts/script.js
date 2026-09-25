@@ -99,8 +99,12 @@ if (window.emailjs && EMAILJS.PUBLIC_KEY !== 'YOUR_EMAILJS_PUBLIC_KEY') {
 // http(s) — e.g. Live Preview or any host — but not via file:// browsing.
 // Logged-in users get components/header-auth.html (Complaint / Response / Logout).
 async function loadComponents() {
-  const inPages = location.pathname.replace(/\\/g, '/').indexOf('/pages/') !== -1;
-  const base = inPages ? '../' : '';
+  const path0 = location.pathname.replace(/\\/g, '/');
+  const inUserArea = path0.indexOf('/pages/accounts/users/') !== -1;
+  const inAdminArea = path0.indexOf('/pages/accounts/admin/') !== -1;
+  const inAccounts = inUserArea || inAdminArea;
+  const inPages = inAccounts || path0.indexOf('/pages/') !== -1;
+  const base = inUserArea || inAdminArea ? '../../../' : (inPages ? '../' : '');
   let loggedIn = false;
   let adminOnly = false;
   try {
@@ -110,8 +114,8 @@ async function loadComponents() {
   } catch (e) { loggedIn = false; }
   // Auth header only inside the account area; public pages (home, services, …) keep the public navbar.
   const path = location.pathname.replace(/\\/g, '/');
-  const isAuthPage = /\/pages\/(users|response|admin-panel)\.html$/.test(path);
-  const isAdminPage = /\/pages\/admin-panel\.html$/.test(path);
+  const isAuthPage = /\/pages\/accounts\/(users|admin)\/.+\.html$/.test(path);
+  const isAdminPage = /\/pages\/accounts\/admin\/(admin-panel|admin_solved)\.html$/.test(path);
   const useAuthHeader = loggedIn && isAuthPage;
   const slot = (name) => document.querySelector('[data-component="' + name + '"]');
   if (!slot('header') && !slot('footer') && !slot('cta')) return;
@@ -130,7 +134,7 @@ async function loadComponents() {
     if (current) {
       document.querySelectorAll('[data-nav="' + current + '"]').forEach((link) => link.classList.add('nav-active'));
     }
-    updateAuthNav(base, current, inPages, loggedIn);
+    updateAuthNav(base, current, inPages, loggedIn, adminOnly);
   }
   const footerSlot = slot('footer');
   if (footerSlot) footerSlot.outerHTML = footerHTML;
@@ -142,22 +146,45 @@ async function loadComponents() {
 
 // === Auth navbar wiring: header-auth.html is injected for logged-in users;
 // here we only redirect login pages and wire the shared Logout button. ===
-function updateAuthNav(base, current, inPages, loggedIn) {
+function updateAuthNav(base, current, inPages, loggedIn, adminOnly) {
   const path = location.pathname.replace(/\\/g, '/');
-  const pagesPrefix = inPages ? '' : 'pages/';
   if (loggedIn && (path.endsWith('/login.html') || path.endsWith('/create_account.html') || path.endsWith('/login-choice.html'))) {
-    location.href = pagesPrefix + (adminOnly ? 'admin-panel.html' : 'users.html');
+    location.href = base + 'pages/accounts/' + (adminOnly ? 'admin/admin-panel.html' : 'users/projects.html');
     return;
   }
   if (!loggedIn) return;
-  document.querySelectorAll('[data-logout]').forEach((el) => {
-    el.addEventListener('click', (e) => {
+  document.querySelectorAll('[data-logout]').forEach((el) => {    el.addEventListener('click', (e) => {
       e.preventDefault();
       try { localStorage.removeItem('trishan_user'); localStorage.removeItem('trishan_admin'); } catch (err) {}
       document.body.classList.remove('menu-open');
       location.href = base + 'index.html';
     });
   });
+  // Unread admin-response badge (per user — fetched with their own user_id).
+  try {
+    const me = JSON.parse(localStorage.getItem('trishan_user') || 'null');
+    if (me && me.id) {
+      updateResponseBadge(base, me.id);
+      setInterval(() => updateResponseBadge(base, me.id), 30000);
+    }
+  } catch (e) {}
+}
+
+// Red dot + white count on the Response nav link; hidden when zero.
+async function updateResponseBadge(base, userId) {
+  try {
+    const res = await fetch(base + 'api/accounts/users/my-complaints.php?user_id=' + encodeURIComponent(userId));
+    const body = await res.json().catch(() => null);
+    let n = 0;
+    if (body && body.ok) {
+      body.complaints.forEach((c) => (c.responses || []).forEach((r) => { if (!+r.seen) n++; }));
+    }
+    document.querySelectorAll('[data-response-badge]').forEach((b) => {
+      b.textContent = n > 99 ? '99+' : String(n);
+      b.classList.toggle('hidden', n <= 0);
+      b.classList.toggle('inline-flex', n > 0);
+    });
+  } catch (e) {}
 }
 
 // Professional animations with Anime.js 4 via CDN (jsdelivr)
@@ -252,6 +279,22 @@ function initMotion() {
     if (nav) nav.classList.toggle('nav-scrolled', h.scrollTop > 24);
   }, { passive: true });
 }
+
+// Password show/hide toggles — buttons with [data-toggle-password="<input-id>"].
+// Delegated on document so it works on every page with zero per-page code.
+(function setupPasswordToggles() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-toggle-password]');
+    if (!btn) return;
+    const input = document.getElementById(btn.getAttribute('data-toggle-password'));
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    const icon = btn.querySelector('i');
+    if (icon) { icon.classList.toggle('bi-eye', !show); icon.classList.toggle('bi-eye-slash', show); }
+  });
+})();
 
 // Mobile menu — delegated on document so it works before/after header injection.
 (function setupMobileMenu() {

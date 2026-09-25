@@ -59,7 +59,7 @@
         showMsg(msg, '', false);
         msg.classList.add('hidden');
         try {
-          const { status, body, raw } = await postJSON('../api/register.php', {
+          const { status, body, raw } = await postJSON('../../../api/accounts/users/register.php', {
             first_name: document.getElementById('caFirstName').value.trim(),
             middle_name: document.getElementById('caMiddleName').value.trim(),
             last_name: document.getElementById('caLastName').value.trim(),
@@ -94,7 +94,7 @@
         if (msg) msg.classList.add('hidden');
         try {
           const loginId = document.getElementById('loginPhone').value.trim();
-          const { status, body, raw } = await postJSON('../api/login.php', {
+          const { status, body, raw } = await postJSON('../../../api/accounts/users/login.php', {
             identifier: loginId,
             phone: loginId,
             password: document.getElementById('loginPassword').value,
@@ -102,7 +102,7 @@
           if (body && body.ok) {
             try { localStorage.setItem('trishan_user', JSON.stringify(body.user)); } catch (e) {}
             showMsg(msg, 'Login successful. Welcome, ' + (body.user.first_name || '') + '!', false);
-            setTimeout(() => { location.href = 'users.html'; }, 1000);
+            setTimeout(() => { location.href = 'projects.html'; }, 1000);
           } else {
             showMsg(msg, apiError(status, body, raw, 'Login failed.'), true);
           }

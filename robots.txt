@@ -1,4 +1,14 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /pages/accounts/admin/admin.html
+Disallow: /pages/accounts/admin/admin-panel.html
+Disallow: /pages/accounts/admin/admin_solved.html
+Disallow: /pages/accounts/users/complaint.html
+Disallow: /pages/accounts/users/response.html
+Disallow: /pages/accounts/users/projects.html
+Disallow: /pages/accounts/users/login.html
+Disallow: /pages/accounts/users/login-choice.html
+Disallow: /pages/accounts/users/create_account.html
 
 Sitemap: https://trishaninfotech.in/sitemap.xml

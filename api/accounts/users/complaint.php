@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/db.php';
+require dirname(__DIR__, 2) . '/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   json(['ok' => false, 'error' => 'Method not allowed.'], 405);

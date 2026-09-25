@@ -43,6 +43,11 @@ function db() {
     } catch (PDOException $e) {
       if ($e->getCode() !== '42S21') throw $e;
     }
+    try {
+      $pdo->exec("ALTER TABLE complaints ADD COLUMN is_solved TINYINT(1) NOT NULL DEFAULT 0");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
     $pdo->exec("UPDATE complaints c JOIN users u ON u.id = c.user_id SET c.username = TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) WHERE c.username = ''");
     $pdo->exec("CREATE TABLE IF NOT EXISTS complaint_issues (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -58,10 +63,16 @@ function db() {
       username VARCHAR(150) NOT NULL DEFAULT '',
       admin_id INT NULL,
       response TEXT NOT NULL,
+      seen TINYINT(1) NOT NULL DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
       FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL
     )");
+    try {
+      $pdo->exec("ALTER TABLE complaint_responses ADD COLUMN seen TINYINT(1) NOT NULL DEFAULT 0");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
     foreach (['complaint_issues', 'complaint_responses'] as $t) {
       try {
         $pdo->exec("ALTER TABLE $t ADD COLUMN username VARCHAR(150) NOT NULL DEFAULT ''");

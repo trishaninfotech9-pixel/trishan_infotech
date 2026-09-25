@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/db.php';
+require dirname(__DIR__, 2) . '/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
   json(['ok' => false, 'error' => 'Method not allowed.'], 405);
@@ -19,7 +19,7 @@ try {
   $complaints = $stmt->fetchAll();
 
   $iStmt = $pdo->prepare('SELECT description, created_at FROM complaint_issues WHERE complaint_id = ? ORDER BY id ASC');
-  $rStmt = $pdo->prepare('SELECT r.response, r.created_at, a.username AS admin FROM complaint_responses r LEFT JOIN admins a ON a.id = r.admin_id WHERE r.complaint_id = ? ORDER BY r.id ASC');
+  $rStmt = $pdo->prepare('SELECT r.response, r.created_at, r.seen, a.username AS admin FROM complaint_responses r LEFT JOIN admins a ON a.id = r.admin_id WHERE r.complaint_id = ? ORDER BY r.id ASC');
   foreach ($complaints as &$c) {
     $iStmt->execute([$c['id']]);
     $c['issues'] = $iStmt->fetchAll();

@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login | Trishan Infotech, Chinsurah Hooghly</title>
-<link rel="icon" type="image/png" href="../images/logo.png">
+<link rel="icon" type="image/png" href="../../../images/logo.png">
 <meta name="description" content="Login to your Trishan Infotech account with your phone number and password.">
-<link rel="canonical" href="https://trishaninfotech.in/pages/login.html">
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0C4A6E">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Trishan Infotech">
 <meta property="og:title" content="Login | Trishan Infotech, Chinsurah Hooghly">
 <meta property="og:description" content="Login to your Trishan Infotech account with your phone number and password.">
-<meta property="og:url" content="https://trishaninfotech.in/pages/login.html">
+<meta property="og:url" content="https://trishaninfotech.in/pages/accounts/users/login.html">
 <meta property="og:image" content="https://trishaninfotech.in/images/logo.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Login | Trishan Infotech, Chinsurah Hooghly">
@@ -24,7 +24,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<link rel="stylesheet" href="../styles/style.css">
+<link rel="stylesheet" href="../../../styles/style.css">
 <style>
   /* Login page only: compact header/footer so card fits without scroll/cut */
   @media (min-width: 768px) {
@@ -33,10 +33,10 @@
     footer .max-w-7xl { padding-top: 10px !important; padding-bottom: 10px !important; }
   }
 </style>
-<script src="../scripts/script.js" defer></script>
-<script src="../scripts/auth.js" defer></script>
+<script src="../../../scripts/script.js" defer></script>
+<script src="../../../scripts/accounts/users/auth.js" defer></script>
 </head>
-<body class="bg-white text-navy-900 min-h-screen flex flex-col md:h-screen md:overflow-hidden">
+<body class="bg-white text-navy-900 min-h-screen flex flex-col">
 <div class="scroll-progress" aria-hidden="true"></div>
 
 <!-- NAVBAR (shared: components/header.html) -->
@@ -58,7 +58,10 @@
       </div>
       <div>
         <label for="loginPassword" class="block text-[13px] font-semibold text-navy mb-1">Password</label>
-        <input required type="password" name="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" minlength="4" class="border border-navy-100 rounded px-3.5 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-navy-700">
+        <div class="relative">
+          <input required type="password" name="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" minlength="4" class="border border-navy-100 rounded pl-3.5 pr-11 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-navy-700">
+          <button type="button" data-toggle-password="loginPassword" class="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-navy-900/50 hover:text-navy transition" aria-label="Show password"><i class="bi bi-eye"></i></button>
+        </div>
       </div>
       <button type="submit" class="bg-navy text-white text-[15px] font-semibold px-6 py-2 rounded hover:bg-navy-700 transition w-full">Login</button>
       <p id="loginMsg" class="hidden text-[13px] text-center mt-2"></p>

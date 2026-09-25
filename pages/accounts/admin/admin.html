@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | Trishan Infotech, Chinsurah Hooghly</title>
-<link rel="icon" type="image/png" href="../images/logo.png">
+<link rel="icon" type="image/png" href="../../../images/logo.png">
 <meta name="description" content="Admin login entry for Trishan Infotech.">
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0C4A6E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,8 +15,8 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<link rel="stylesheet" href="../styles/style.css">
-<script src="../scripts/script.js" defer></script>
+<link rel="stylesheet" href="../../../styles/style.css">
+<script src="../../../scripts/script.js" defer></script>
 <script defer>
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('adminLoginForm');
@@ -28,7 +29,7 @@
       btn.disabled = true;
       btn.textContent = 'Logging in…';
       try {
-        const res = await fetch('../api/admin-login.php', {
+        const res = await fetch('../../../api/accounts/admin/admin-login.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -79,7 +80,10 @@
         </div>
         <div>
           <label for="adminPassword" class="block text-[13px] font-semibold text-navy mb-1">Password</label>
-          <input required type="password" id="adminPassword" placeholder="Enter your password" autocomplete="current-password" minlength="4" class="border border-navy-100 rounded px-3.5 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-navy-700">
+          <div class="relative">
+            <input required type="password" id="adminPassword" placeholder="Enter your password" autocomplete="current-password" minlength="4" class="border border-navy-100 rounded pl-3.5 pr-11 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-navy-700">
+            <button type="button" data-toggle-password="adminPassword" class="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-navy-900/50 hover:text-navy transition" aria-label="Show password"><i class="bi bi-eye"></i></button>
+          </div>
         </div>
         <button type="submit" class="bg-navy text-white text-[15px] font-semibold px-6 py-2 rounded hover:bg-navy-700 transition w-full">Login</button>
         <p id="adminLoginMsg" class="hidden text-[13px] text-center mt-2"></p>

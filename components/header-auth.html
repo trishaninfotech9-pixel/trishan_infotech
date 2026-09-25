@@ -1,12 +1,13 @@
 <!-- Logged-in site header (Complaint / Response / Logout). {{BASE}} becomes '' on index.html, '../' inside pages/. -->
 <header id="siteNav" class="bs-reset border-b border-navy-100 sticky top-0 bg-white/95 backdrop-blur z-50">
-  <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16 md:h-24">
     <a href="{{BASE}}index.html" class="flex items-center gap-2">
-      <img src="{{BASE}}images/logo.png" alt="Trishan Infotech logo" class="h-[45px] w-auto">
+      <img src="{{BASE}}images/logo.png" alt="Trishan Infotech logo" class="h-12 md:h-[91px] w-auto">
     </a>
     <nav id="desktopNav" class="hidden md:flex items-center gap-8 text-sm font-medium text-navy-900">
-      <a href="{{BASE}}pages/users.html" data-nav="complaint" class="hover:text-navy transition">Complaint</a>
-      <a href="{{BASE}}pages/response.html" data-nav="response" class="hover:text-navy transition">Response</a>
+      <a href="{{BASE}}pages/accounts/users/projects.html" data-nav="projects" class="hover:text-navy transition">Projects</a>
+      <a href="{{BASE}}pages/accounts/users/complaint.html" data-nav="complaint" class="hover:text-navy transition">Complaint</a>
+      <a href="{{BASE}}pages/accounts/users/response.html" data-nav="response" class="hover:text-navy transition inline-flex items-center gap-1.5">Response <span data-response-badge class="hidden bg-red-600 text-white text-[11px] font-bold rounded-full min-w-[18px] h-[18px] items-center justify-center px-1">0</span></a>
       <button type="button" data-logout class="inline-flex items-center gap-2 border border-navy-100 text-navy text-sm font-semibold px-5 py-2.5 rounded hover:bg-navy-50 transition"><i class="bi bi-box-arrow-right"></i>Logout</button>
     </nav>
     <button id="menuBtn" class="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
@@ -16,7 +17,8 @@
 </header>
 <div class="menu-overlay" aria-hidden="true"></div>
 <nav id="mobileNav" class="mobile-nav" aria-label="Mobile">
-  <a href="{{BASE}}pages/users.html" data-nav="complaint">Complaint</a>
-  <a href="{{BASE}}pages/response.html" data-nav="response">Response</a>
+  <a href="{{BASE}}pages/accounts/users/projects.html" data-nav="projects">Projects</a>
+  <a href="{{BASE}}pages/accounts/users/complaint.html" data-nav="complaint">Complaint</a>
+  <a href="{{BASE}}pages/accounts/users/response.html" data-nav="response">Response <span data-response-badge class="hidden bg-red-600 text-white text-[11px] font-bold rounded-full min-w-[18px] h-[18px] items-center justify-center px-1">0</span></a>
   <a href="#" data-logout>Logout</a>
 </nav>

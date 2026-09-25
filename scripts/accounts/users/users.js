@@ -1,4 +1,4 @@
-// pages/users.html logic: guard, welcome + IST date, prefill, issue blocks (frontend only).
+// pages/accounts/complaint.html logic: guard, welcome + IST date, prefill, issue blocks.
 (function () {
   document.addEventListener('DOMContentLoaded', () => {
     // ---- Guard + welcome ----
@@ -109,7 +109,7 @@
       btn.disabled = true;
       btn.textContent = 'Submitting…';
       try {
-        const res = await fetch('../api/complaint.php', {
+        const res = await fetch('../../../api/accounts/users/complaint.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
