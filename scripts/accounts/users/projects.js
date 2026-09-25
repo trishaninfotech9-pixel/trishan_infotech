@@ -26,7 +26,7 @@
       list.innerHTML = body.projects.map((p) =>
         '<div class="border border-navy-100 rounded p-5 hover:border-navy-700 transition flex flex-col">' +
           '<div class="w-9 h-9 rounded bg-navy-50 flex items-center justify-center mb-3"><i class="bi bi-kanban text-navy"></i></div>' +
-          '<p class="font-bold text-navy mb-1 break-words">' + esc(p.project_name) + '</p>' +
+          '<p class="font-bold text-navy mb-1 break-words"><a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="hover:text-gold-600 transition">' + esc(p.project_name) + '</a></p>' +
           (p.details ? '<p class="text-[13px] text-navy-900/70 leading-relaxed break-words mb-1">' + esc(p.details) + '</p>' : '') +
           '<p class="text-[13px] text-navy-900/60 mb-4">Added ' + esc(fmtDate(p.created_at)) + '</p>' +
           '<a href="complaint.html?project=' + encodeURIComponent(p.project_name) + '" class="mt-auto bg-navy text-white text-sm font-semibold px-5 py-2 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
