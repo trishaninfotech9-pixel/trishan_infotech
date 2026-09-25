@@ -1,0 +1,24 @@
+<!-- Admin dashboard shell (ERP style): sidebar + topbar. {{BASE}} is replaced by shell.js -->
+<div class="admin-sidebar" id="adminSidebar">
+  <a class="admin-brand" href="{{BASE}}pages/accounts/admin/dashboard.html">
+    <img src="{{BASE}}images/logo.png" alt="Trishan Infotech logo">
+    <span><strong>Trishan Infotech</strong><small>Admin Suite</small></span>
+  </a>
+  <p class="admin-label">Workspace</p>
+  <nav aria-label="Admin">
+    <a data-nav="dashboard" href="{{BASE}}pages/accounts/admin/dashboard.html"><i class="bi bi-grid"></i>Dashboard</a>
+    <a data-nav="new" href="{{BASE}}pages/accounts/admin/admin-panel.html"><i class="bi bi-inbox"></i>New Complaints</a>
+    <a data-nav="solved" href="{{BASE}}pages/accounts/admin/admin_solved.html"><i class="bi bi-check-circle"></i>Solved Complaint</a>
+    <a data-nav="users" href="{{BASE}}pages/accounts/admin/users.html"><i class="bi bi-people"></i>Users</a>
+  </nav>
+  <button type="button" data-logout class="admin-logout"><i class="bi bi-box-arrow-right"></i>Logout</button>
+</div>
+<div class="admin-overlay" id="adminOverlay" aria-hidden="true"></div>
+<header class="admin-topbar">
+  <button type="button" id="adminMenuBtn" aria-label="Open menu"><i class="bi bi-list"></i></button>
+  <label class="admin-search"><i class="bi bi-search"></i><input type="search" placeholder="Search modules, records," aria-label="Search"></label>
+  <div class="admin-top-right">
+    <button type="button" class="admin-bell" aria-label="Notifications"><i class="bi bi-bell"></i><span class="admin-dot"></span></button>
+    <div class="admin-chip"><span class="admin-avatar" id="adminAvatar">A</span><span class="admin-who"><strong id="adminChipName">Admin</strong><small>ADMIN</small></span></div>
+  </div>
+</header>

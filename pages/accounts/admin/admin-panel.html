@@ -18,23 +18,23 @@
 <link rel="stylesheet" href="../../../styles/style.css">
 <script src="../../../scripts/script.js" defer></script>
 <script src="../../../scripts/accounts/admin/admin-panel.js" defer></script>
+<script src="../../../scripts/accounts/admin/shell.js" defer></script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
 <div class="scroll-progress" aria-hidden="true"></div>
 
-<!-- NAVBAR (shared auth header: Complaint / Response / Logout) -->
-<div data-component="header" data-page="new"></div>
+<!-- ADMIN DASHBOARD SHELL (sidebar + topbar) -->
+<div id="adminShell" data-page="new"></div>
 
 <section class="max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14 w-full">
   <div class="max-w-6xl mx-auto" id="adminPanelWrap">
-    <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-gradient mb-1.5">New Complaints</h1>
-    <p class="hero-lead text-sm text-navy-900/70 mb-6">Hi <span id="adminName">Admin</span>, reply below and tick the checkbox to mark a complaint as solved.</p>
+    <p class="text-[12px] font-semibold tracking-wide text-navy-900/50 mb-1" id="adminDateLine">TODAY</p>
+    <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-navy-900 mb-1.5">Complaint Dashboard</h1>
+    <p class="hero-lead text-sm text-navy-900/60 mb-6">Hi <span id="adminName">Admin</span>, reply below and tick the checkbox to mark a complaint as solved.</p>
+    <h2 class="font-bold text-lg text-navy-900 mb-3">New Complaints</h2>
     <div id="complaintList" class="space-y-4 overflow-x-auto"></div>
   </div>
 </section>
-
-<!-- FOOTER (shared: components/footer.html) -->
-<div data-component="footer" class="mt-auto"></div>
 
 </body>
 </html>

@@ -58,7 +58,7 @@
           '</a>'
         ).join('');
         body.innerHTML =
-          '<div class="hidden md:block overflow-x-auto"><table class="w-full border-collapse bg-white border border-navy-100 rounded overflow-hidden">' +
+          '<div class="hidden md:block overflow-x-auto"><table class="w-full min-w-[760px] border-collapse bg-white border border-navy-100 rounded overflow-hidden">' +
             '<thead><tr>' +
             '<th class="border border-navy-100 bg-navy-50 px-4 py-3 text-left text-[13px] font-bold text-navy">id</th>' +
             '<th class="border border-navy-100 bg-navy-50 px-4 py-3 text-left text-[13px] font-bold text-navy">username</th>' +

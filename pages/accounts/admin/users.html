@@ -17,12 +17,13 @@
 <link rel="stylesheet" href="../../../styles/style.css">
 <script src="../../../scripts/script.js" defer></script>
 <script src="../../../scripts/accounts/admin/admin-users.js" defer></script>
+<script src="../../../scripts/accounts/admin/shell.js" defer></script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
 <div class="scroll-progress" aria-hidden="true"></div>
 
-<!-- NAVBAR (shared admin header) -->
-<div data-component="header" data-page="users"></div>
+<!-- ADMIN DASHBOARD SHELL (sidebar + topbar) -->
+<div id="adminShell" data-page="users"></div>
 
 <section class="max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14 w-full">
   <div class="max-w-3xl mx-auto" data-animate="fade-up">
@@ -60,9 +61,6 @@
     </form>
   </div>
 </section>
-
-<!-- FOOTER (shared: components/footer.html) -->
-<div data-component="footer" class="mt-auto"></div>
 
 </body>
 </html>

@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /pages/accounts/admin/dashboard.html
 Disallow: /pages/accounts/admin/admin.html
 Disallow: /pages/accounts/admin/users.html
 Disallow: /pages/accounts/admin/admin-panel.html

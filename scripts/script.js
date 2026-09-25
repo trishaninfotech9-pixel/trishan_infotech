@@ -115,7 +115,7 @@ async function loadComponents() {
   // Auth header only inside the account area; public pages (home, services, …) keep the public navbar.
   const path = location.pathname.replace(/\\/g, '/');
   const isAuthPage = /\/pages\/accounts\/(users|admin)\/.+\.html$/.test(path);
-  const isAdminPage = /\/pages\/accounts\/admin\/(admin-panel|admin_solved|users)\.html$/.test(path);
+  const isAdminPage = /\/pages\/accounts\/admin\/(dashboard|admin-panel|admin_solved|users)\.html$/.test(path);
   const useAuthHeader = loggedIn && isAuthPage;
   const slot = (name) => document.querySelector('[data-component="' + name + '"]');
   if (!slot('header') && !slot('footer') && !slot('cta')) return;
@@ -149,7 +149,7 @@ async function loadComponents() {
 function updateAuthNav(base, current, inPages, loggedIn, adminOnly) {
   const path = location.pathname.replace(/\\/g, '/');
   if (loggedIn && (path.endsWith('/login.html') || path.endsWith('/create_account.html') || path.endsWith('/login-choice.html'))) {
-    location.href = base + 'pages/accounts/' + (adminOnly ? 'admin/admin-panel.html' : 'users/projects.html');
+    location.href = base + 'pages/accounts/' + (adminOnly ? 'admin/dashboard.html' : 'users/projects.html');
     return;
   }
   if (!loggedIn) return;

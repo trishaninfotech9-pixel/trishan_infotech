@@ -42,7 +42,7 @@
           try { localStorage.setItem('trishan_admin', JSON.stringify(body.admin)); } catch (err) {}
           msg.textContent = 'Admin login successful. Redirecting…';
           msg.classList.remove('hidden');
-          setTimeout(() => { location.href = 'admin-panel.html'; }, 1000);
+          setTimeout(() => { location.href = 'dashboard.html'; }, 1000);
         } else {
           msg.textContent = (body && body.error) || 'Login failed.';
           msg.classList.remove('hidden');
