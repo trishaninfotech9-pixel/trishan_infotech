@@ -89,10 +89,26 @@
           '</tr></thead><tbody>' + parts.map((p) => p.row).join('') + '</tbody></table>' +
         '</div>' +
         '<div class="md:hidden space-y-4">' + parts.map((p) => p.card).join('') + '</div>';
-      requestAnimationFrame(() => fitClamps(list));
+      requestAnimationFrame(() => {
+        fitClamps(list);
+        focusComplaint(list);
+      });
     } catch (err) {
       list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-red-600">' + esc(err.message) + '</p></div>';
     }
+    }
+
+    function focusComplaint(root) {
+      try {
+        const fid = new URLSearchParams(location.search).get('focus');
+        if (!fid) return;
+        const target = root.querySelector('[data-complaint="' + fid + '"]');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.classList.add('notif-flash');
+          setTimeout(() => target.classList.remove('notif-flash'), 2500);
+        }
+      } catch (e) {}
     }
 
     list.addEventListener('click', async (e) => {

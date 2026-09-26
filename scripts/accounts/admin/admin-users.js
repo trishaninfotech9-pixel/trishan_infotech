@@ -1,4 +1,4 @@
-// pages/accounts/admin/users.html logic: user dropdown, their projects, add/delete.
+// pages/accounts/admin/users.html logic: alphabetical user list, expand to manage projects.
 (function () {
   document.addEventListener('DOMContentLoaded', async () => {
     let admin = null;
@@ -6,14 +6,7 @@
     if (!admin) { location.href = 'admin.html'; return; }
     document.getElementById('adminUsersName').textContent = admin.username || 'Admin';
 
-    const select = document.getElementById('userSelect');
-    const info = document.getElementById('userInfo');
-    const list = document.getElementById('userProjectList');
-    const form = document.getElementById('addProjectForm');
-    const input = document.getElementById('projectName');
-    const detailsInput = document.getElementById('projectDetails');
-    const budgetInput = document.getElementById('projectBudget');
-    const msg = document.getElementById('projectMsg');
+    const box = document.getElementById('userCards');
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const fmtDate = (d) => {
       try {
@@ -22,94 +15,164 @@
     };
     const trashSVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#DC2626" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3V2h11v1z"/></svg>';
 
-    let usersById = {};
-
-    async function loadUsers() {
-      try {
-        const res = await fetch('../../../api/accounts/admin/list-users.php?admin_id=' + encodeURIComponent(admin.id));
-        const body = await res.json().catch(() => null);
-        if (!body || !body.ok) throw new Error((body && body.error) || 'Failed to load users.');
-        usersById = {};
-        select.innerHTML = '<option value="">— Choose a user —</option>' + body.users.map((u) => {
-          usersById[u.id] = u;
-          const name = [u.first_name, u.middle_name, u.last_name].filter(Boolean).join(' ');
-          return '<option value="' + u.id + '">' + esc(name) + '</option>';
-        }).join('');
-      } catch (err) {
-        info.textContent = err.message;
-      }
+    async function api(url, opts) {
+      const res = await fetch(url, opts);
+      const body = await res.json().catch(() => null);
+      if (!body || !body.ok) throw new Error((body && body.error) || 'Request failed.');
+      return body;
     }
 
-    async function loadProjects() {
-      const uid = select.value;
-      form.classList.toggle('hidden', !uid);
-      if (!uid) {
-        info.textContent = '';
-        list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-navy-900/60">Select a user above to see their projects.</p></div>';
-        return;
-      }
-      const u = usersById[uid] || {};
-      info.textContent = [u.email, u.phone].filter(Boolean).join(' • ');
-      list.innerHTML = '<p class="text-sm text-navy-900/60 text-center">Loading…</p>';
+    let lastProjects = [];
+
+    // Project popup (full details). Built once, filled per click.
+    let modal = document.getElementById('projModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'projModal';
+      modal.className = 'hidden fixed inset-0 z-[80] flex items-center justify-center p-4';
+      modal.innerHTML =
+        '<div class="proj-overlay absolute inset-0 bg-navy-900/50"></div>' +
+        '<div class="relative bg-white rounded-2xl shadow-sm max-w-lg w-full max-h-[85vh] overflow-y-auto p-5 sm:p-6">' +
+          '<button type="button" class="proj-close absolute top-3 right-3 inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-navy-50 transition" aria-label="Close"><i class="bi bi-x-lg text-navy"></i></button>' +
+          '<div id="projModalBody" class="space-y-3"></div>' +
+        '</div>';
+      document.body.appendChild(modal);
+      modal.querySelector('.proj-overlay').addEventListener('click', () => modal.classList.add('hidden'));
+      modal.querySelector('.proj-close').addEventListener('click', () => modal.classList.add('hidden'));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') modal.classList.add('hidden'); });
+    }
+    function openProject(i) {
+      const p = lastProjects[i];
+      if (!p) return;
+      const bodyEl = document.getElementById('projModalBody');
+      bodyEl.innerHTML =
+        '<p class="font-extrabold text-xl text-navy break-words pr-8">' + esc(p.project_name) + '</p>' +
+        '<p class="text-[13px] text-navy-900/60">' + esc(fmtDate(p.created_at)) + (p.open ? (p.complaint_id && p.page ? ' • <a href="' + p.page + '.html?focus=' + p.complaint_id + '" class="font-semibold text-gold-600 hover:underline">open complaint</a>' : ' • <span class="font-semibold text-gold-600">open complaint</span>') : '') + '</p>' +
+        (p.details ? '<div><p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50 mb-1">Details</p><p class="text-sm text-navy-900/80 leading-relaxed break-words">' + esc(p.details) + '</p></div>' : '') +
+        ((p.budget !== null && p.budget !== '' && p.budget !== undefined) ? '<p class="text-sm font-bold text-navy">Budget: ₹' + esc(p.budget) + '</p>' : '');
+      modal.classList.remove('hidden');
+    }
+
+    async function loadProjects(card, uid) {
+      const listEl = card.querySelector('.u-projects');
+      listEl.innerHTML = '<p class="text-sm text-navy-900/60">Loading…</p>';
       try {
-        const res = await fetch('../../../api/accounts/admin/user-projects.php?admin_id=' + encodeURIComponent(admin.id) + '&user_id=' + encodeURIComponent(uid));
-        const body = await res.json().catch(() => null);
-        if (!body || !body.ok) throw new Error((body && body.error) || 'Failed to load projects.');
+        const body = await api('../../../api/accounts/admin/user-projects.php?admin_id=' + encodeURIComponent(admin.id) + '&user_id=' + encodeURIComponent(uid));
         if (!body.projects.length) {
-          list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-navy-900/60">No projects for this user yet. Add one below.</p></div>';
+          listEl.innerHTML = '<p class="text-sm text-navy-900/60">No projects yet. Add one below.</p>';
           return;
         }
-        list.innerHTML = body.projects.map((p) =>
-          '<div class="border border-navy-100 rounded p-4 bg-white flex items-center justify-between gap-3" data-project="' + p.id + '">' +
-            '<div class="min-w-0"><p class="font-semibold text-navy break-words">' + esc(p.project_name) + '</p>' +
-            (p.details ? '<p class="text-[13px] text-navy-900/70 break-words mt-0.5">' + esc(p.details) + '</p>' : '') +
-            '<p class="text-[12px] text-navy-900/50">' + esc(fmtDate(p.created_at)) + (p.open ? ' • open complaint' : '') + '</p></div>' +
-            '<button type="button" class="delete-project-btn shrink-0 inline-flex items-center justify-center w-11 h-11 rounded border border-red-200 bg-red-50 hover:bg-red-100 transition" data-id="' + p.id + '" data-source="' + (p.source || 'assigned') + '" data-name="' + esc(p.project_name) + '" title="Delete project" aria-label="Delete project ' + esc(p.project_name) + '">' + trashSVG + '</button>' +
+        listEl.innerHTML = '<div class="grid sm:grid-cols-2 gap-3">' + (lastProjects = body.projects).map((p, i) =>
+          '<div class="bg-white border border-navy-100 rounded-xl p-4 sm:p-5 shadow-sm hover:border-navy-700 hover:shadow transition flex flex-col cursor-pointer" data-pcard="' + i + '">' +
+            '<div class="flex items-start justify-between gap-3 mb-2">' +
+              '<div class="min-w-0"><p class="font-bold text-navy leading-snug break-words">' + esc(p.project_name) + '</p>' +
+              '<p class="text-[12px] text-navy-900/50 mt-0.5">' + esc(fmtDate(p.created_at)) + (p.open ? ' • <span class="font-semibold text-gold-600">open complaint</span>' : '') + '</p></div>' +
+              '<button type="button" class="u-del shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition" data-id="' + p.id + '" data-source="' + (p.source || 'assigned') + '" data-name="' + esc(p.project_name) + '" aria-label="Delete project ' + esc(p.project_name) + '">' + trashSVG + '</button>' +
+            '</div>' +
+            (p.details ? '<div class="clamp-text clamp-2 text-[13px] text-navy-900/70 leading-relaxed break-words">' + esc(p.details) + '</div>' : '') +
           '</div>'
-        ).join('');
+        ).join('') + '</div>';
       } catch (err) {
-        list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-red-600">' + esc(err.message) + '</p></div>';
+        listEl.innerHTML = '<p class="text-sm text-red-600">' + esc(err.message) + '</p>';
       }
     }
 
-    select.addEventListener('change', loadProjects);
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const uid = select.value;
-      msg.classList.add('hidden');
-      if (!uid) {
-        msg.textContent = 'Select a user first.';
-        msg.style.color = '#DC2626';
-        msg.classList.remove('hidden');
-        select.focus();
+    box.innerHTML = '<p class="text-sm text-navy-900/60 text-center">Loading…</p>';
+    try {
+      const body = await api('../../../api/accounts/admin/list-users.php?admin_id=' + encodeURIComponent(admin.id));
+      const users = (body.users || []).slice().sort((a, b) =>
+        ([a.first_name, a.last_name].filter(Boolean).join(' ') || '').localeCompare([b.first_name, b.last_name].filter(Boolean).join(' '), undefined, { sensitivity: 'base' }));
+      if (!users.length) {
+        box.innerHTML = '<div class="border border-navy-100 rounded p-5 text-center bg-white"><p class="text-sm text-navy-900/60">No users yet.</p></div>';
         return;
       }
-      if (!input.value.trim()) { input.focus(); input.reportValidity(); return; }
+      box.innerHTML = users.map((u) => {
+        const name = [u.first_name, u.middle_name, u.last_name].filter(Boolean).join(' ');
+        const contact = [u.email, u.phone].filter(Boolean).join(' • ');
+        return '<div class="border border-navy-100 rounded bg-white overflow-hidden" data-user="' + u.id + '">' +
+          '<button type="button" class="u-head w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-4 hover:bg-navy-50/60 transition text-left">' +
+            '<span class="min-w-0"><span class="block font-bold text-navy break-words">' + esc(name) + '</span>' +
+            (contact ? '<span class="block text-[13px] text-navy-900/60 break-words">' + esc(contact) + '</span>' : '') + '</span>' +
+            '<i class="bi bi-chevron-down u-chev shrink-0 text-navy-900/50 transition-transform"></i>' +
+          '</button>' +
+          '<div class="u-body hidden border-t border-navy-100 px-4 sm:px-5 py-4 space-y-3">' +
+            '<div class="u-projects space-y-2.5"></div>' +
+            '<form class="u-add border border-navy-100 rounded p-4 space-y-3 bg-navy-50/40">' +
+              '<p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50">Add Project</p>' +
+              '<input required type="text" maxlength="150" placeholder="Project name" class="u-name border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">' +
+              '<textarea required rows="2" maxlength="2000" placeholder="Project details" class="u-det border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700"></textarea>' +
+              '<div class="flex items-center gap-2">' +
+                '<input required type="number" min="0" step="0.01" placeholder="Budget" class="u-bud border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">' +
+                '<button type="submit" class="shrink-0 bg-navy text-white text-sm font-semibold px-5 py-2.5 min-h-[44px] rounded hover:bg-navy-700 transition inline-flex items-center gap-2"><i class="bi bi-plus-circle"></i>Add</button>' +
+              '</div>' +
+              '<p class="u-msg text-[13px] hidden"></p>' +
+            '</form>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    } catch (err) {
+      box.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center bg-white"><p class="text-sm text-red-600">' + esc(err.message) + '</p></div>';
+      return;
+    }
+
+    // Click a project card (not the dustbin) to pop up full details.
+    box.addEventListener('click', (e) => {
+      if (e.target.closest('.u-del')) return;
+      const card = e.target.closest('[data-pcard]');
+      if (!card) return;
+      openProject(+card.dataset.pcard);
+    });
+
+    // Expand / collapse a user.
+    box.addEventListener('click', (e) => {
+      const head = e.target.closest('.u-head');
+      if (!head) return;
+      const card = head.closest('[data-user]');
+      const bodyEl = card.querySelector('.u-body');
+      const chev = card.querySelector('.u-chev');
+      const opening = bodyEl.classList.toggle('hidden');
+      if (chev) chev.style.transform = opening ? '' : 'rotate(180deg)';
+      if (!opening && !bodyEl.dataset.loaded) {
+        bodyEl.dataset.loaded = '1';
+        loadProjects(card, card.dataset.user);
+      }
+    });
+
+    // Add project for the expanded user.
+    box.addEventListener('submit', async (e) => {
+      const form = e.target.closest('.u-add');
+      if (!form) return;
+      e.preventDefault();
+      const card = form.closest('[data-user]');
+      const msg = form.querySelector('.u-msg');
+      const nameEl = form.querySelector('.u-name');
+      const detEl = form.querySelector('.u-det');
+      const budEl = form.querySelector('.u-bud');
+      msg.classList.add('hidden');
+      if (!nameEl.value.trim()) { nameEl.focus(); nameEl.reportValidity(); return; }
+      if (!detEl.value.trim()) { detEl.focus(); detEl.reportValidity(); return; }
+      if (!budEl.value.trim()) { budEl.focus(); budEl.reportValidity(); return; }
       const btn = form.querySelector('button[type="submit"]');
       btn.disabled = true;
       try {
-        const res = await fetch('../../../api/accounts/admin/add-project.php', {
+        await api('../../../api/accounts/admin/add-project.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ admin_id: admin.id, user_id: uid, project_name: input.value.trim(), details: detailsInput.value.trim(), budget: budgetInput.value.trim() }),
+          body: JSON.stringify({
+            admin_id: admin.id,
+            user_id: card.dataset.user,
+            project_name: nameEl.value.trim(),
+            details: form.querySelector('.u-det').value.trim(),
+            budget: form.querySelector('.u-bud').value.trim(),
+          }),
         });
-        const body = await res.json().catch(() => null);
-        if (body && body.ok) {
-          msg.textContent = body.message;
-          msg.style.color = '';
-          msg.classList.remove('hidden');
-          input.value = '';
-          detailsInput.value = '';
-          budgetInput.value = '';
-          await loadProjects();
-        } else {
-          msg.textContent = (body && body.error) || 'Could not add project.';
-          msg.style.color = '#DC2626';
-          msg.classList.remove('hidden');
-        }
+        msg.textContent = 'Project added.';
+        msg.style.color = '';
+        msg.classList.remove('hidden');
+        form.reset();
+        await loadProjects(card, card.dataset.user);
       } catch (err) {
-        msg.textContent = 'Cannot reach server.';
+        msg.textContent = err.message;
         msg.style.color = '#DC2626';
         msg.classList.remove('hidden');
       } finally {
@@ -117,36 +180,32 @@
       }
     });
 
-    list.addEventListener('click', async (e) => {
-      const btn = e.target.closest('.delete-project-btn');
+    // Delete project (assigned rows; complaint-sourced need the Users-page rule via API).
+    box.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.u-del');
       if (!btn) return;
+      const card = btn.closest('[data-user]');
       const isComplaint = btn.dataset.source === 'complaint';
-      const confirmText = isComplaint
+      if (!confirm(isComplaint
         ? 'Delete "' + btn.dataset.name + '"? This removes its complaint(s) and responses from the database. This cannot be undone.'
-        : 'Delete this project? This cannot be undone.';
-      if (!confirm(confirmText)) return;
+        : 'Delete this project? This cannot be undone.')) return;
       btn.disabled = true;
       btn.style.opacity = '0.5';
       try {
         const payload = isComplaint
-          ? { admin_id: admin.id, project_id: 0, user_id: select.value, project_name: btn.dataset.name }
+          ? { admin_id: admin.id, project_id: 0, user_id: card.dataset.user, project_name: btn.dataset.name }
           : { admin_id: admin.id, project_id: btn.dataset.id };
-        const res = await fetch('../../../api/accounts/admin/delete-project.php', {
+        await api('../../../api/accounts/admin/delete-project.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        const body = await res.json().catch(() => null);
-        if (!body || !body.ok) throw new Error((body && body.error) || 'Could not delete.');
-        await loadProjects();
+        await loadProjects(card, card.dataset.user);
       } catch (err) {
         alert(err.message);
         btn.disabled = false;
         btn.style.opacity = '1';
       }
     });
-
-    await loadUsers();
-    loadProjects();
   });
 })();

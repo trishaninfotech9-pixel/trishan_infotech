@@ -73,6 +73,25 @@ try {
     $p['status'] = ((int)($p['is_complete'] ?? 0) === 1) ? 'complete' : 'pending';
   }
   unset($p);
+  // Latest complaint per project name → deep link to the section it belongs to.
+  $stmt = $pdo->prepare('SELECT c.id, c.project_name, c.is_solved, c.is_ignored, EXISTS(SELECT 1 FROM complaint_responses r WHERE r.complaint_id = c.id) AS has_resp FROM complaints c WHERE c.user_id = ? ORDER BY c.id DESC');
+  $stmt->execute([$user_id]);
+  $linkMap = [];
+  foreach ($stmt->fetchAll() as $row) {
+    $key = strtolower(trim($row['project_name']));
+    if (isset($linkMap[$key])) continue;
+    if ((int)$row['is_ignored'] === 1) $sec = 'all_ignore_complaint';
+    elseif ((int)$row['is_solved'] === 1) $sec = 'all_sloved_complaint';
+    elseif (!(int)$row['has_resp']) $sec = 'all_pending_complaint';
+    else $sec = 'all_complaint';
+    $linkMap[$key] = ['complaint_id' => (int)$row['id'], 'page' => $sec];
+  }
+  foreach ($assigned as &$p) {
+    $key = strtolower(trim($p['project_name']));
+    $p['complaint_id'] = $linkMap[$key]['complaint_id'] ?? 0;
+    $p['page'] = $linkMap[$key]['page'] ?? '';
+  }
+  unset($p);
   json(['ok' => true, 'projects' => $assigned]);
 } catch (PDOException $e) {
   json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);

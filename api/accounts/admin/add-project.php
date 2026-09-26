@@ -22,7 +22,9 @@ if ($budgetRaw !== '') {
 if ($admin_id <= 0) json(['ok' => false, 'error' => 'Admin login required.'], 401);
 if ($user_id <= 0) json(['ok' => false, 'error' => 'Select a user first.'], 400);
 if ($project === '' || strlen($project) > 150) json(['ok' => false, 'error' => 'Project name is required (max 150 chars).'], 400);
+if ($details === '') json(['ok' => false, 'error' => 'Project details are required.'], 400);
 if (strlen($details) > 2000) json(['ok' => false, 'error' => 'Details too long (max 2000 chars).'], 400);
+if ($budgetRaw === '') json(['ok' => false, 'error' => 'Budget is required.'], 400);
 
 try {
   $pdo = db();
