@@ -20,6 +20,20 @@
     };
     const th = 'border border-navy-100 bg-navy-50 px-3 py-2 text-left text-[12px] font-bold text-navy';
     const td = 'border border-navy-100 px-3 py-2 text-[13px] text-navy-900/80 align-top break-words';
+    function clampBlock(html, plainLen) {
+      if (plainLen <= 40) return html;
+      return '<div class="clamp-wrap"><div class="clamp-text clamp-2">' + html + '</div><button type="button" class="clamp-btn">Show more</button></div>';
+    }
+    function fitClamps(root) {
+      root.querySelectorAll('.clamp-wrap').forEach((w) => {
+        const t = w.querySelector('.clamp-text');
+        const btn = w.querySelector('.clamp-btn');
+        if (t && btn && t.scrollHeight <= t.clientHeight + 1) {
+          w.classList.add('open');
+          btn.style.display = 'none';
+        }
+      });
+    }
     const trashSVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#DC2626" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3V2h11v1z"/></svg>';
 
     async function load() {
@@ -34,19 +48,20 @@
       }
       const parts = body.complaints.map((c) => {
         const username = esc(c.username || [c.first_name, c.middle_name, c.last_name].filter(Boolean).join(' '));
+        const rawDesc = (c.issues || []).map((i) => i.description).join(' ');
         const description = (c.issues || []).length
-          ? c.issues.map((i) => '• ' + esc(i.description)).join('<br>')
+          ? clampBlock(c.issues.map((i) => '• ' + esc(i.description)).join('<br>'), rawDesc.length)
           : '<span class="text-navy-900/40">—</span>';
         const responses = (c.responses || []).length
-          ? c.responses.map((r) => '<div class="mb-1 break-words"><span>' + esc(r.response) + '</span><br><span class="text-[11px] text-navy-900/50">' + esc(r.admin || 'Admin') + ' • ' + esc(fmtDate(r.created_at)) + '</span></div>').join('')
+          ? c.responses.map((r) => '<div class="mb-1 break-words"><span>' + clampBlock(esc(r.response), String(r.response || '').length) + '</span><br><span class="text-[11px] text-navy-900/50">' + esc(r.admin || 'Admin') + ' • ' + esc(fmtDate(r.created_at)) + '</span></div>').join('')
           : '<span class="text-navy-900/40">—</span>';
         const delBtn = '<button type="button" class="delete-btn inline-flex items-center justify-center w-11 h-11 rounded border border-red-200 bg-red-50 hover:bg-red-100 transition" data-id="' + c.id + '" title="Delete complaint ' + c.id + ' everywhere" aria-label="Delete complaint ' + c.id + '">' + trashSVG + '</button>';
         const row = '<tr data-complaint="' + c.id + '">' +
           '<td class="' + td + ' font-semibold">' + username + '</td>' +
           '<td class="' + td + '">' + esc(c.project_name) + '</td>' +
           '<td class="' + td + '">' + esc(fmtDate(c.created_at)) + '</td>' +
-          '<td class="' + td + '">' + description + '</td>' +
-          '<td class="' + td + '">' + responses + '</td>' +
+          '<td class="' + td + ' max-w-[220px]">' + description + '</td>' +
+          '<td class="' + td + ' max-w-[260px]">' + responses + '</td>' +
           '<td class="' + td + ' text-center">' + delBtn + '</td>' +
         '</tr>';
         const card = '<div class="border border-navy-100 rounded p-4 bg-white space-y-3" data-complaint="' + c.id + '">' +
@@ -74,12 +89,22 @@
           '</tr></thead><tbody>' + parts.map((p) => p.row).join('') + '</tbody></table>' +
         '</div>' +
         '<div class="md:hidden space-y-4">' + parts.map((p) => p.card).join('') + '</div>';
+      requestAnimationFrame(() => fitClamps(list));
     } catch (err) {
       list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-red-600">' + esc(err.message) + '</p></div>';
     }
     }
 
     list.addEventListener('click', async (e) => {
+      const clampBtn = e.target.closest('.clamp-btn');
+      if (clampBtn) {
+        const wrap = clampBtn.closest('.clamp-wrap');
+        if (wrap) {
+          const open = wrap.classList.toggle('open');
+          clampBtn.textContent = open ? 'Show less' : 'Show more';
+        }
+        return;
+      }
       const btn = e.target.closest('.delete-btn');
       if (!btn) return;
       const complaintId = btn.dataset.id;

@@ -139,6 +139,38 @@ body.admin-nav-open .admin-sidebar { transform: none; }
 .admin-sidebar nav a:hover, .admin-logout:hover { background: rgba(255,255,255,.08); color: #fff; }
 .admin-sidebar nav a.admin-active { background: var(--admin-lime); color: #ffffff; font-weight: 700; }
 .admin-sidebar nav a i, .admin-logout i { font-size: 16px; }
+.admin-group { display: flex; flex-direction: column; }
+.admin-parent {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 11px 14px; border-radius: 12px; color: #E6EFF6; font-size: 14px; font-weight: 500;
+  border: 0; background: transparent; width: 100%; text-align: left; cursor: pointer;
+  transition: background-color .2s, color .2s;
+}
+.admin-parent:hover { background: rgba(255,255,255,.08); color: #fff; }
+.admin-parent-label { display: inline-flex; align-items: center; gap: 12px; }
+.admin-parent-label i { font-size: 16px; }
+.admin-parent.admin-active { background: var(--admin-lime); color: #ffffff; font-weight: 700; }
+.admin-chev { font-size: 13px; transition: transform .25s; }
+.admin-group.open .admin-chev { transform: rotate(180deg); }
+.admin-sub {
+  display: none; flex-direction: column; gap: 2px;
+  margin: 2px 0 2px 26px; padding-left: 12px;
+  border-left: 1px solid rgba(255,255,255,.25);
+}
+.admin-group.open .admin-sub { display: flex; }
+.admin-sub a {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  border-radius: 10px; color: #cfe3d8; font-size: 13.5px; font-weight: 500;
+  transition: background-color .2s, color .2s;
+}
+.admin-sub a:hover { background: rgba(255,255,255,.08); color: #fff; }
+.admin-sub a.admin-active { background: var(--admin-lime); color: #ffffff; font-weight: 700; }
+
+/* Collapsible long text (admin complaint tables): 2 lines + Show more button. */
+.clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.clamp-wrap.open .clamp-text { display: block; -webkit-line-clamp: unset; }
+.clamp-btn { background: none; border: 0; color: #0284C7; font-size: 12px; font-weight: 600; cursor: pointer; padding: 2px 0; }
+.clamp-btn:hover { text-decoration: underline; }
 .admin-logout { margin-top: auto; border: 1px solid rgba(255,255,255,.35); }
 .admin-overlay {
   position: fixed; inset: 0; z-index: 55; background: rgba(0,0,0,.4);

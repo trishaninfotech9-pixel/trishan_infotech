@@ -16,7 +16,13 @@ try {
   $stmt->execute([$admin_id]);
   if (!$stmt->fetch()) json(['ok' => false, 'error' => 'Admin not found.'], 401);
 
-  $stmt = $pdo->prepare('SELECT id, project_name, details, created_at FROM projects WHERE user_id = ? ORDER BY id DESC');
+  $stmt = $pdo->prepare('SELECT id, first_name, middle_name, last_name FROM users WHERE id = ? LIMIT 1');
+  $stmt->execute([$user_id]);
+  $account = $stmt->fetch();
+  if (!$account) json(['ok' => false, 'error' => 'User not found.'], 404);
+  $uname = trim(implode(' ', array_filter([$account['first_name'], $account['middle_name'], $account['last_name']])));
+
+  $stmt = $pdo->prepare('SELECT id, project_name, details, is_complete, created_at FROM projects WHERE user_id = ? ORDER BY id DESC');
   $stmt->execute([$user_id]);
   $assigned = $stmt->fetchAll();
 
@@ -40,20 +46,33 @@ try {
   $openNames = [];
   foreach ($stmt->fetchAll() as $row) { $openNames[$row['nm']] = true; }
 
+  // Budget per project name from project_details snapshots.
+  $stmt = $pdo->prepare('SELECT project_name, budget FROM project_details WHERE user_id = ?');
+  $stmt->execute([$user_id]);
+  $budgets = [];
+  foreach ($stmt->fetchAll() as $row) { $budgets[strtolower(trim($row['project_name']))] = $row['budget']; }
+
   $seen = [];
   foreach ($assigned as &$p) {
     $p['source'] = 'assigned';
     $key = strtolower(trim($p['project_name']));
     $seen[$key] = true;
     $p['open'] = isset($openNames[$key]);
+    $p['budget'] = $budgets[$key] ?? null;
+    $p['username'] = $uname;
   }
   unset($p);
   foreach ($fromComplaints as $c) {
     $key = strtolower(trim($c['project_name']));
     if ($key === '' || isset($seen[$key])) continue;
     $seen[$key] = true;
-    $assigned[] = ['id' => 0, 'project_name' => $c['project_name'], 'details' => $issueDetails[$key] ?? '', 'created_at' => $c['created_at'], 'source' => 'complaint', 'open' => isset($openNames[$key])];
+    $assigned[] = ['id' => 0, 'project_name' => $c['project_name'], 'details' => $issueDetails[$key] ?? '', 'budget' => $budgets[$key] ?? null, 'username' => $uname, 'created_at' => $c['created_at'], 'source' => 'complaint', 'status' => 'pending', 'open' => isset($openNames[$key])];
   }
+  // Status is driven ONLY by the admin checkbox (projects.is_complete).
+  foreach ($assigned as &$p) {
+    $p['status'] = ((int)($p['is_complete'] ?? 0) === 1) ? 'complete' : 'pending';
+  }
+  unset($p);
   json(['ok' => true, 'projects' => $assigned]);
 } catch (PDOException $e) {
   json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);

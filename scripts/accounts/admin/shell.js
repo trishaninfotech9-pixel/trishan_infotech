@@ -25,10 +25,28 @@
     });
     document.body.appendChild(main);
 
-    // Active section.
+    // Active section + Complaint accordion (open when a child is active).
     const page = holder.getAttribute('data-page') || '';
     holder.querySelectorAll('[data-nav]').forEach((a) => {
       if (a.getAttribute('data-nav') === page) a.classList.add('admin-active');
+    });
+    const groups = [
+      { group: 'complaintGroup', parent: 'complaintParent', pages: ['all', 'pending', 'solved', 'ignored'] },
+      { group: 'projectGroup', parent: 'projectParent', pages: ['p-all', 'p-complete', 'p-pending'] },
+    ];
+    groups.forEach((g) => {
+      const groupEl = document.getElementById(g.group);
+      const parentEl = document.getElementById(g.parent);
+      if (!groupEl || !parentEl) return;
+      if (g.pages.includes(page)) {
+        groupEl.classList.add('open');
+        parentEl.classList.add('admin-active');
+        parentEl.setAttribute('aria-expanded', 'true');
+      }
+      parentEl.addEventListener('click', () => {
+        const open = groupEl.classList.toggle('open');
+        parentEl.setAttribute('aria-expanded', String(open));
+      });
     });
 
     // Admin chip from session.

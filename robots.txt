@@ -2,10 +2,15 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /pages/accounts/admin/dashboard.html
+Disallow: /pages/accounts/admin/all_project.html
+Disallow: /pages/accounts/admin/all_complete_project.html
+Disallow: /pages/accounts/admin/all_pending_project.html
 Disallow: /pages/accounts/admin/admin.html
 Disallow: /pages/accounts/admin/users.html
-Disallow: /pages/accounts/admin/admin-panel.html
-Disallow: /pages/accounts/admin/admin_solved.html
+Disallow: /pages/accounts/admin/all_complaint.html
+Disallow: /pages/accounts/admin/all_pending_complaint.html
+Disallow: /pages/accounts/admin/all_sloved_complaint.html
+Disallow: /pages/accounts/admin/all_ignore_complaint.html
 Disallow: /pages/accounts/users/complaint.html
 Disallow: /pages/accounts/users/details.html
 Disallow: /pages/accounts/users/response.html

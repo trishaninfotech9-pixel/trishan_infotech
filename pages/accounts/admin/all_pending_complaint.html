@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>New Complaints | Admin | Trishan Infotech</title>
+<title>Pending Complaint | Admin | Trishan Infotech</title>
 <link rel="icon" type="image/png" href="../../../images/logo.png">
-<meta name="description" content="Admin view of all user complaints with reply.">
+<meta name="description" content="Admin view of pending complaints with reply.">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0C4A6E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,15 +24,13 @@
 <div class="scroll-progress" aria-hidden="true"></div>
 
 <!-- ADMIN DASHBOARD SHELL (sidebar + topbar) -->
-<div id="adminShell" data-page="new"></div>
+<div id="adminShell" data-page="pending"></div>
 
 <section class="max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14 w-full">
   <div class="max-w-6xl mx-auto" id="adminPanelWrap">
-    <p class="text-[12px] font-semibold tracking-wide text-navy-900/50 mb-1" id="adminDateLine">TODAY</p>
-    <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-navy-900 mb-1.5">Complaint Dashboard</h1>
+    <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-navy-900 mb-1.5">Pending Complaint</h1>
     <p class="hero-lead text-sm text-navy-900/60 mb-6">Hi <span id="adminName">Admin</span>, reply below and tick the checkbox to mark a complaint as solved.</p>
-    <h2 class="font-bold text-lg text-navy-900 mb-3">New Complaints</h2>
-    <div id="complaintList" class="space-y-4 overflow-x-auto"></div>
+    <div id="complaintList" data-filter="pending" class="space-y-4 overflow-x-auto"></div>
   </div>
 </section>
 

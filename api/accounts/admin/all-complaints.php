@@ -18,9 +18,10 @@ try {
   // Solved state is driven ONLY by the admin checkbox (complaints.is_solved).
   // New page shows ALL complaints (solved stay visible, checked);
   // Solved page shows only solved.
-  if ($filter === 'solved') { $where = 'c.is_solved = 1'; }
-  elseif ($filter === 'new') { $where = 'c.is_solved = 0'; }
-  else { $where = '1'; }
+  if ($filter === 'solved') { $where = 'c.is_solved = 1 AND c.is_ignored = 0'; }
+  elseif ($filter === 'new' || $filter === 'pending') { $where = 'c.is_solved = 0 AND c.is_ignored = 0'; }
+  elseif ($filter === 'ignored') { $where = 'c.is_ignored = 1'; }
+  else { $where = 'c.is_ignored = 0'; }
 
   $complaints = $pdo->query(
     'SELECT c.id, c.project_name, c.created_at, c.username, c.is_solved, u.first_name, u.middle_name, u.last_name, u.email, u.phone
