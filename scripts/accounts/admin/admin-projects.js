@@ -54,26 +54,34 @@
         const trs = rows.map((p) => {
           const done = (p.status || 'pending') === 'complete';
           const checkCell = showCheck ? '<td class="' + cell + ' text-center"><input type="checkbox" class="done-check w-5 h-5 accent-[#0C4A6E]" data-name="' + esc(p.project_name) + '"' + (done ? ' checked' : '') + ' title="Mark project as complete" aria-label="Mark ' + esc(p.project_name) + ' as complete"></td>' : '';
+          const det = p.details ? String(p.details) : '';
+          const detCell = !det ? '<span class="text-navy-900/40">—</span>'
+            : det.length <= 140 ? esc(det)
+            : esc(det.slice(0, 140)) + '…<br><a href="project_details.html?user_id=' + encodeURIComponent(uid) + '&project=' + encodeURIComponent(p.project_name) + '" class="clamp-btn">see more</a>';
           return '<tr>' +
             '<td class="' + cell + ' font-semibold text-navy">' + esc(p.username || '') + '</td>' +
             '<td class="' + cell + ' font-semibold text-navy">' + esc(p.project_name) + '</td>' +
-            '<td class="' + cell + '">' + (p.details ? esc(p.details) : '<span class="text-navy-900/40">—</span>') + '</td>' +
+            '<td class="' + cell + '">' + detCell + '</td>' +
             '<td class="' + cell + ' whitespace-nowrap">' + fmtBudget(p.budget) + '</td>' +
             checkCell +
           '</tr>';
         }).join('');
         const cards = rows.map((p) => {
           const done = (p.status || 'pending') === 'complete';
+          const cdet = p.details ? String(p.details) : '';
+          const detCard = !cdet ? '—'
+            : cdet.length <= 140 ? esc(cdet)
+            : esc(cdet.slice(0, 140)) + '… <a href="project_details.html?user_id=' + encodeURIComponent(uid) + '&project=' + encodeURIComponent(p.project_name) + '" class="clamp-btn">see more</a>';
           return '<div class="border border-navy-100 rounded p-4 bg-white space-y-1.5 text-sm">' +
             '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Username</span><span class="font-semibold text-navy break-words text-right">' + esc(p.username || '') + '</span></div>' +
             '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Project</span><span class="font-semibold text-navy break-words text-right">' + esc(p.project_name) + '</span></div>' +
-            '<div><span class="text-navy-900/50">Details</span><p class="break-words">' + (p.details ? esc(p.details) : '—') + '</p></div>' +
+            '<div><span class="text-navy-900/50">Details</span><p class="break-words">' + detCard + '</p></div>' +
             '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Budget</span><span>' + fmtBudget(p.budget) + '</span></div>' +
             (showCheck ? '<label class="flex items-center gap-2 pt-1 text-navy font-semibold cursor-pointer"><input type="checkbox" class="done-check w-5 h-5 shrink-0 accent-[#0C4A6E]" data-name="' + esc(p.project_name) + '"' + (done ? ' checked' : '') + '>Complete</label>' : '') +
           '</div>';
         }).join('');
         list.innerHTML =
-          '<div class="hidden md:block overflow-x-auto"><table class="w-full border-collapse bg-white border border-navy-100 rounded overflow-hidden">' +
+          '<div class="hidden md:block overflow-x-auto"><table class="w-full min-w-[680px] border-collapse bg-white border border-navy-100 rounded overflow-hidden">' +
             '<thead><tr>' +
             '<th class="border border-navy-100 bg-navy-50 px-3.5 py-2.5 text-left text-[12px] font-bold text-navy">username</th>' +
             '<th class="border border-navy-100 bg-navy-50 px-3.5 py-2.5 text-left text-[12px] font-bold text-navy">project_name</th>' +

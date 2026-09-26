@@ -21,6 +21,7 @@ try {
   if ($filter === 'solved') { $where = 'c.is_solved = 1 AND c.is_ignored = 0'; }
   elseif ($filter === 'new' || $filter === 'pending') { $where = 'c.is_solved = 0 AND c.is_ignored = 0'; }
   elseif ($filter === 'ignored') { $where = 'c.is_ignored = 1'; }
+  elseif ($filter === 'unseen') { $where = 'c.is_solved = 0 AND c.is_ignored = 0 AND c.seen_admin = 0'; }
   else { $where = 'c.is_ignored = 0'; }
 
   $complaints = $pdo->query(

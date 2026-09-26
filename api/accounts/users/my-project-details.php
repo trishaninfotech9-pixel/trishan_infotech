@@ -15,6 +15,12 @@ try {
   $stmt = $pdo->prepare('SELECT id, username, email, phone_no, project_name, project_details, budget, created_at FROM project_details WHERE user_id = ? AND LOWER(project_name) = LOWER(?) LIMIT 1');
   $stmt->execute([$user_id, $project]);
   $row = $stmt->fetch();
+  if ($row) {
+    $st = $pdo->prepare('SELECT is_complete FROM projects WHERE user_id = ? AND LOWER(project_name) = LOWER(?) LIMIT 1');
+    $st->execute([$user_id, $project]);
+    $pr = $st->fetch();
+    $row['status'] = ($pr && (int)$pr['is_complete'] === 1) ? 'complete' : 'pending';
+  }
   json(['ok' => true, 'details' => $row ?: null]);
 } catch (PDOException $e) {
   json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);

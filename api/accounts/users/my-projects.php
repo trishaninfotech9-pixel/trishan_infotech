@@ -16,7 +16,7 @@ try {
   if (!$account) json(['ok' => false, 'error' => 'User not found.'], 401);
   $uname = trim(implode(' ', array_filter([$account['first_name'], $account['middle_name'], $account['last_name']])));
 
-  $stmt = $pdo->prepare('SELECT id, project_name, details, created_at FROM projects WHERE user_id = ? ORDER BY id DESC');
+  $stmt = $pdo->prepare('SELECT id, project_name, details, is_complete, created_at FROM projects WHERE user_id = ? ORDER BY id DESC');
   $stmt->execute([$user_id]);
   $assigned = $stmt->fetchAll();
 
@@ -56,13 +56,14 @@ try {
     $p['username'] = $uname;
     $p['email'] = $account['email'];
     $p['phone_no'] = $account['phone'];
+    $p['status'] = ((int)($p['is_complete'] ?? 0) === 1) ? 'complete' : 'pending';
   }
   unset($p);
   foreach ($fromComplaints as $c) {
     $key = strtolower(trim($c['project_name']));
     if ($key === '' || isset($seen[$key])) continue;
     $seen[$key] = true;
-    $assigned[] = ['id' => 0, 'pd_id' => $pdIds[$key] ?? null, 'username' => $uname, 'email' => $account['email'], 'phone_no' => $account['phone'], 'project_name' => $c['project_name'], 'details' => $issueDetails[$key] ?? '', 'budget' => $budgets[$key] ?? null, 'created_at' => $c['created_at'], 'source' => 'complaint'];
+    $assigned[] = ['id' => 0, 'pd_id' => $pdIds[$key] ?? null, 'username' => $uname, 'email' => $account['email'], 'phone_no' => $account['phone'], 'project_name' => $c['project_name'], 'details' => $issueDetails[$key] ?? '', 'budget' => $budgets[$key] ?? null, 'created_at' => $c['created_at'], 'source' => 'complaint', 'status' => 'pending'];
   }
   json(['ok' => true, 'projects' => $assigned]);
 } catch (PDOException $e) {

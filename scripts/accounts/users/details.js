@@ -78,6 +78,8 @@
       }
 
       const proj = (mp.projects || []).find((p) => p.project_name.toLowerCase() === name.toLowerCase());
+      const st = (proj && proj.status) || 'pending';
+      const statusPill = '<span class="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (st === 'complete' ? 'text-green-700 bg-green-50' : 'text-red-600 bg-red-50') + '">' + (st === 'complete' ? 'Completed' : 'Pending') + '</span>';
       const mine = (mc.complaints || []).filter((c) => (c.project_name || '').toLowerCase() === name.toLowerCase());
       const history = mine.length
         ? mine.map((c) => {
@@ -99,6 +101,7 @@
           '<dt class="text-[12px] font-semibold uppercase tracking-wide text-navy-900/50">Phone</dt>' +
           '<dd class="text-sm text-navy-900/80">' + esc(det ? det.phone_no : user.phone) + '</dd>' +
           ((det && det.budget !== null && det.budget !== '') ? '<dt class="text-[12px] font-semibold uppercase tracking-wide text-navy-900/50">Budget</dt><dd class="text-sm font-bold text-navy">₹' + esc(det.budget) + '</dd>' : '') +
+          '<dt class="text-[12px] font-semibold uppercase tracking-wide text-navy-900/50">Status</dt><dd class="text-sm">' + statusPill + '</dd>' +
         '</div>' +
         (detText ? '<div class="bg-navy-50/60 border border-navy-100 rounded-xl px-4 py-3.5"><p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50 mb-1">About this project</p><p class="text-sm text-navy-900/80 leading-relaxed break-words">' + esc(detText) + '</p></div>' : '');
 

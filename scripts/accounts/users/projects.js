@@ -23,15 +23,29 @@
         list.innerHTML = '<div class="border border-navy-100 rounded p-5 text-center"><p class="text-sm text-navy-900/70"><i class="bi bi-kanban me-1"></i>No projects assigned yet.</p></div>';
         return;
       }
-      list.innerHTML = body.projects.map((p) =>
-        '<div class="border border-navy-100 rounded p-5 hover:border-navy-700 transition flex flex-col">' +
-          '<div class="w-9 h-9 rounded bg-navy-50 flex items-center justify-center mb-3"><i class="bi bi-kanban text-navy"></i></div>' +
+      list.innerHTML = body.projects.map((p) => {
+        const det = p.details ? String(p.details) : '';
+        const detHtml = !det ? '' :
+          det.length <= 150 ? '<p class="text-[13px] text-navy-900/70 leading-relaxed break-words mb-1">' + esc(det) + '</p>' :
+          '<div class="clamp-wrap mb-1"><p class="clamp-text clamp-3 text-[13px] text-navy-900/70 leading-relaxed">' + esc(det) + '</p><a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="clamp-btn inline-block">Show more</a></div>';
+        return '<div class="border border-navy-100 rounded p-4 hover:border-navy-700 transition flex flex-col">' +
+          '<div class="w-9 h-9 rounded bg-navy-50 flex items-center justify-center mb-2"><i class="bi bi-kanban text-navy"></i></div>' +
           '<p class="font-bold text-navy mb-1 break-words"><a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="hover:text-gold-600 transition">' + esc(p.project_name) + '</a></p>' +
-          (p.details ? '<p class="text-[13px] text-navy-900/70 leading-relaxed break-words mb-1">' + esc(p.details) + '</p>' : '') +
-          '<p class="text-[13px] text-navy-900/60 mb-4">Added ' + esc(fmtDate(p.created_at)) + '</p>' +
-          '<a href="complaint.html?project=' + encodeURIComponent(p.project_name) + '" class="mt-auto bg-navy text-white text-sm font-semibold px-5 py-2 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
-        '</div>'
-      ).join('');
+          detHtml +
+          '<p class="text-[13px] text-navy-900/60 mb-3">Added ' + esc(fmtDate(p.created_at)) + '</p>' +
+          '<div class="mt-auto flex gap-2">' +
+            '<a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 border border-navy-100 text-navy text-sm font-semibold px-4 py-2 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-info-circle"></i>Details</a>' +
+            '<a href="complaint.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 bg-navy text-white text-sm font-semibold px-4 py-2 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      list.querySelectorAll('.clamp-wrap').forEach((w) => {
+        const t = w.querySelector('.clamp-text');
+        const btn = w.querySelector('.clamp-btn');
+        if (t && btn && t.scrollHeight <= t.clientHeight + 1) {
+          btn.style.display = 'none';
+        }
+      });
     } catch (err) {
       list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-red-600">' + esc(err.message) + '</p></div>';
     }

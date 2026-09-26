@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /pages/accounts/admin/project_details.html
 Disallow: /pages/accounts/admin/dashboard.html
 Disallow: /pages/accounts/admin/all_project.html
 Disallow: /pages/accounts/admin/all_complete_project.html

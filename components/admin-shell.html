@@ -12,10 +12,10 @@
         <span class="admin-parent-label"><i class="bi bi-inbox"></i>Complaint</span><i class="bi bi-chevron-down admin-chev"></i>
       </button>
       <div class="admin-sub" id="complaintSub">
-        <a data-nav="all" href="{{BASE}}pages/accounts/admin/all_complaint.html">All Complaint</a>
-        <a data-nav="solved" href="{{BASE}}pages/accounts/admin/all_sloved_complaint.html">Solved Complaint</a>
-        <a data-nav="pending" href="{{BASE}}pages/accounts/admin/all_pending_complaint.html">Pending Complaint</a>
-        <a data-nav="ignored" href="{{BASE}}pages/accounts/admin/all_ignore_complaint.html">Ignored Complaint</a>
+        <a data-nav="all" href="{{BASE}}pages/accounts/admin/all_complaint.html"><i class="bi bi-list-ul"></i>All Complaint</a>
+        <a data-nav="solved" href="{{BASE}}pages/accounts/admin/all_sloved_complaint.html"><i class="bi bi-check2-circle"></i>Solved Complaint</a>
+        <a data-nav="pending" href="{{BASE}}pages/accounts/admin/all_pending_complaint.html"><i class="bi bi-clock-history"></i>Pending Complaint</a>
+        <a data-nav="ignored" href="{{BASE}}pages/accounts/admin/all_ignore_complaint.html"><i class="bi bi-eye-slash"></i>Ignored Complaint</a>
       </div>
     </div>
     <div class="admin-group" id="projectGroup">
@@ -23,9 +23,9 @@
         <span class="admin-parent-label"><i class="bi bi-kanban"></i>Project</span><i class="bi bi-chevron-down admin-chev"></i>
       </button>
       <div class="admin-sub" id="projectSub">
-        <a data-nav="p-all" href="{{BASE}}pages/accounts/admin/all_project.html">All Project</a>
-        <a data-nav="p-complete" href="{{BASE}}pages/accounts/admin/all_complete_project.html">Complete Project</a>
-        <a data-nav="p-pending" href="{{BASE}}pages/accounts/admin/all_pending_project.html">Pending Project</a>
+        <a data-nav="p-all" href="{{BASE}}pages/accounts/admin/all_project.html"><i class="bi bi-kanban"></i>All Project</a>
+        <a data-nav="p-complete" href="{{BASE}}pages/accounts/admin/all_complete_project.html"><i class="bi bi-check2-square"></i>Complete Project</a>
+        <a data-nav="p-pending" href="{{BASE}}pages/accounts/admin/all_pending_project.html"><i class="bi bi-hourglass-split"></i>Pending Project</a>
       </div>
     </div>
     <a data-nav="users" href="{{BASE}}pages/accounts/admin/users.html"><i class="bi bi-people"></i>Users</a>
@@ -35,9 +35,12 @@
 <div class="admin-overlay" id="adminOverlay" aria-hidden="true"></div>
 <header class="admin-topbar">
   <button type="button" id="adminMenuBtn" aria-label="Open menu"><i class="bi bi-list"></i></button>
-  <label class="admin-search"><i class="bi bi-search"></i><input type="search" placeholder="Search modules, records," aria-label="Search"></label>
+  <label class="admin-search"><i class="bi bi-search"></i><input type="search" placeholder="search record" aria-label="Search"></label>
   <div class="admin-top-right">
-    <button type="button" class="admin-bell" aria-label="Notifications"><i class="bi bi-bell"></i><span class="admin-dot"></span></button>
+    <div class="admin-bell-wrap">
+      <button type="button" class="admin-bell" id="adminBellBtn" aria-label="Notifications" aria-expanded="false"><i class="bi bi-bell"></i><span class="admin-count hidden" id="adminBellCount">0</span></button>
+      <div class="admin-notif hidden" id="adminNotifDrop" role="menu" aria-label="Notifications"></div>
+    </div>
     <div class="admin-chip"><span class="admin-avatar" id="adminAvatar">A</span><span class="admin-who"><strong id="adminChipName">Admin</strong><small>ADMIN</small></span></div>
   </div>
 </header>

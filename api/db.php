@@ -53,6 +53,11 @@ function db() {
     } catch (PDOException $e) {
       if ($e->getCode() !== '42S21') throw $e;
     }
+    try {
+      $pdo->exec("ALTER TABLE complaints ADD COLUMN seen_admin TINYINT(1) NOT NULL DEFAULT 0");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
     $pdo->exec("UPDATE complaints c JOIN users u ON u.id = c.user_id SET c.username = TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) WHERE c.username = ''");
     $pdo->exec("CREATE TABLE IF NOT EXISTS complaint_issues (
       id INT AUTO_INCREMENT PRIMARY KEY,
