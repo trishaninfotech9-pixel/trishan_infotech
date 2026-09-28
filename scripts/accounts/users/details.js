@@ -84,9 +84,13 @@
       const history = mine.length
         ? mine.map((c) => {
             const replied = (c.responses || []).length > 0;
-            return '<div class="flex items-center justify-between gap-2 border border-navy-100 rounded px-3.5 py-2.5">' +
-              '<span class="text-sm text-navy-900/80">' + esc(fmtDate(c.created_at)) + ' • ' + c.issues.length + ' issue' + (c.issues.length === 1 ? '' : 's') + '</span>' +
-              '<span class="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (replied ? 'text-green-700 bg-green-50' : 'text-gold-600 bg-navy-50') + '">' + (replied ? 'Replied' : 'Pending') + '</span>' +
+            const issueList = (c.issues || []).map((i) => '<li class="text-sm text-navy-900/80 leading-relaxed break-words">• ' + esc(i.description) + '</li>').join('');
+            return '<div class="border border-navy-100 rounded px-3.5 py-2.5">' +
+              '<div class="flex items-center justify-between gap-2 mb-1">' +
+                '<span class="text-sm text-navy-900/80">' + esc(fmtDate(c.created_at)) + ' • ' + c.issues.length + ' issue' + (c.issues.length === 1 ? '' : 's') + '</span>' +
+                '<span class="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (replied ? 'text-green-700 bg-green-50' : 'text-gold-600 bg-navy-50') + '">' + (replied ? 'Replied' : 'Pending') + '</span>' +
+              '</div>' +
+              '<ul class="space-y-1">' + issueList + '</ul>' +
             '</div>';
           }).join('')
         : '<p class="text-sm text-navy-900/50">No complaints for this project yet.</p>';
