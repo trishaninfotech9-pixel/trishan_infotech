@@ -60,8 +60,10 @@
 
     // Mobile drawer.
     const menuBtn = document.getElementById('adminMenuBtn');
+    const closeBtn = document.getElementById('adminCloseBtn');
     const overlay = document.getElementById('adminOverlay');
     if (menuBtn) menuBtn.addEventListener('click', () => document.body.classList.toggle('admin-nav-open'));
+    if (closeBtn) closeBtn.addEventListener('click', () => document.body.classList.remove('admin-nav-open'));
     if (overlay) overlay.addEventListener('click', () => document.body.classList.remove('admin-nav-open'));
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') document.body.classList.remove('admin-nav-open');

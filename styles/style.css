@@ -123,7 +123,15 @@ body.has-admin-shell { background: var(--admin-bg); }
 }
 @media (min-width: 1024px) { .admin-sidebar { transform: none; } }
 body.admin-nav-open .admin-sidebar { transform: none; }
-.admin-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 16px; }
+.admin-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 16px; flex: 1; min-width: 0; }
+.admin-brand-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.admin-close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 12px; border: 0; background: transparent;
+  font-size: 18px; color: #E6EFF6; cursor: pointer; flex-shrink: 0;
+}
+.admin-close:hover { background: rgba(255,255,255,.08); color: #fff; }
+@media (min-width: 1024px) { .admin-close { display: none; } }
 .admin-brand img { height: 40px; width: auto; border-radius: 10px; background: #fff; padding: 2px; }
 .admin-brand span { display: flex; flex-direction: column; line-height: 1.2; }
 .admin-brand strong { color: #fff; font-size: 15px; }
