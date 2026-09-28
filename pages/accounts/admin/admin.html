@@ -59,19 +59,26 @@
 </script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
+<!-- BODY START: all visible page content lives inside the body tag -->
 <div class="scroll-progress" aria-hidden="true"></div>
 
+<!-- ================= HEADER ================= -->
+<!-- HEADER: site navbar (injected from components/header.html) -->
 <!-- NAVBAR (shared: components/header.html) -->
 <div data-component="header" data-page="login"></div>
 
+<!-- ================= MAIN CONTENT ================= -->
 <!-- ADMIN ENTRY -->
 <section class="w-full max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14 flex-1 flex items-center justify-center">
+  <!-- LOGIN CARD -->
   <div class="max-w-[400px] w-full mx-auto border border-navy-100 rounded p-8 text-center" data-animate="fade-up">
     <div class="w-11 h-11 rounded bg-navy-50 flex items-center justify-center mb-5 mx-auto">
       <i class="bi bi-shield text-navy text-xl"></i>
     </div>
+    <!-- PAGE TITLE -->
     <h1 class="font-bold text-lg text-navy mb-2">Admin Login</h1>
     <p class="text-sm text-navy-900/80 leading-relaxed mb-5">Login with your admin email to manage complaints and responses.</p>
+    <!-- LOGIN FORM -->
     <form id="adminLoginForm" class="bs-reset space-y-3 mt-2 text-left" method="POST" action="#">
       <div class="space-y-3">
         <div>
@@ -92,6 +99,8 @@
   </div>
 </section>
 
+<!-- ================= FOOTER ================= -->
+<!-- FOOTER: site footer (injected from components/footer.html) -->
 <!-- FOOTER (shared: components/footer.html) -->
 <div data-component="footer" class="mt-auto"></div>
 

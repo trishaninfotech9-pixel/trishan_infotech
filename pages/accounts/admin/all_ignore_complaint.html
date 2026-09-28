@@ -21,15 +21,22 @@
 <script src="../../../scripts/accounts/admin/shell.js" defer></script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
+<!-- BODY START: all visible page content lives inside the body tag -->
 <div class="scroll-progress" aria-hidden="true"></div>
 
+<!-- ================= HEADER ================= -->
+<!-- HEADER: admin dashboard shell (sidebar + topbar, injected by shell.js) -->
 <!-- ADMIN DASHBOARD SHELL (sidebar + topbar) -->
 <div id="adminShell" data-page="ignored"></div>
 
+<!-- ================= MAIN CONTENT ================= -->
+<!-- IGNORED COMPLAINTS SECTION -->
 <section class="max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14 w-full">
   <div class="max-w-6xl mx-auto" id="adminIgnoredWrap">
+    <!-- PAGE TITLE -->
     <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-navy-900 mb-1.5">Ignored Complaint</h1>
     <p class="hero-lead text-sm text-navy-900/60 mb-6">Hi <span id="adminIgnoredName">Admin</span>, hidden complaints live here — nothing is deleted.</p>
+    <!-- IGNORED LIST -->
     <div id="ignoredList" class="space-y-4 overflow-x-auto"></div>
   </div>
 </section>
