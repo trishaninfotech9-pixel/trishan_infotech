@@ -43,7 +43,6 @@
           vrow('AMC Amount', money(pd.amc_amount)) +
           vrow('MMC Date', dt(pd.mmc_date)) +
           vrow('MMC Amount', money(pd.mmc_amount)) +
-          vrow('Total Cost', money(pd.total_cost)) +
           vrow('Paid', money(pd.paid_amount)) +
           vrow('Due Amount', money(pd.due_amount)) +
           vrow('Next Payment', dt(pd.next_payment_date)) +

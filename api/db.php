@@ -144,7 +144,6 @@ function db() {
       amc_amount DECIMAL(12,2) NULL DEFAULT NULL,
       mmc_date DATE NULL,
       mmc_amount DECIMAL(12,2) NULL DEFAULT NULL,
-      total_cost DECIMAL(12,2) NULL DEFAULT NULL,
       paid_amount DECIMAL(12,2) NULL DEFAULT NULL,
       due_amount DECIMAL(12,2) NULL DEFAULT NULL,
       next_payment_date DATE NULL,
@@ -163,7 +162,6 @@ function db() {
       "amc_amount DECIMAL(12,2) NULL DEFAULT NULL",
       "mmc_date DATE NULL AFTER amc_amount",
       "mmc_amount DECIMAL(12,2) NULL DEFAULT NULL AFTER mmc_date",
-      "total_cost DECIMAL(12,2) NULL DEFAULT NULL",
       "paid_amount DECIMAL(12,2) NULL DEFAULT NULL",
       "due_amount DECIMAL(12,2) NULL DEFAULT NULL",
       "next_payment_date DATE NULL",
@@ -177,6 +175,9 @@ function db() {
     // Keep MMC columns right beside the AMC ones.
     $pdo->exec("ALTER TABLE project_details MODIFY COLUMN mmc_date DATE NULL AFTER amc_amount");
     $pdo->exec("ALTER TABLE project_details MODIFY COLUMN mmc_amount DECIMAL(12,2) NULL DEFAULT NULL AFTER mmc_date");
+    // Total Cost field retired: drop the column from existing databases.
+    try { $pdo->exec("ALTER TABLE project_details DROP COLUMN total_cost"); }
+    catch (PDOException $e) { /* already gone — ignore */ }
     try {
       $pdo->exec("ALTER TABLE project_details ADD COLUMN user_id INT NOT NULL DEFAULT 0");
     } catch (PDOException $e) {
