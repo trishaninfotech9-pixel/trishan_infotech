@@ -12,7 +12,7 @@ if ($project === '') json(['ok' => false, 'error' => 'Project required.'], 400);
 
 try {
   $pdo = db();
-  $stmt = $pdo->prepare('SELECT id, username, email, phone_no, project_name, project_details, budget, created_at FROM project_details WHERE user_id = ? AND LOWER(project_name) = LOWER(?) LIMIT 1');
+  $stmt = $pdo->prepare('SELECT id, username, email, phone_no, project_name, project_details, budget, domain_name, domain_booking_date, domain_amount, server_name, server_renewal_date, server_amount, amc_date, amc_amount, total_cost, paid_amount, due_amount, next_payment_date, last_pay_amount, last_pay_date, created_at FROM project_details WHERE user_id = ? AND LOWER(project_name) = LOWER(?) LIMIT 1');
   $stmt->execute([$user_id, $project]);
   $row = $stmt->fetch();
   if ($row) {

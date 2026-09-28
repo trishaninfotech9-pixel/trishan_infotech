@@ -134,8 +134,42 @@ function db() {
       project_name VARCHAR(150) NOT NULL,
       project_details TEXT NOT NULL,
       budget DECIMAL(12,2) NULL DEFAULT NULL,
+      domain_name VARCHAR(150) NOT NULL DEFAULT '',
+      domain_booking_date DATE NULL,
+      domain_amount DECIMAL(12,2) NULL DEFAULT NULL,
+      server_name VARCHAR(150) NOT NULL DEFAULT '',
+      server_renewal_date DATE NULL,
+      server_amount DECIMAL(12,2) NULL DEFAULT NULL,
+      amc_date DATE NULL,
+      amc_amount DECIMAL(12,2) NULL DEFAULT NULL,
+      total_cost DECIMAL(12,2) NULL DEFAULT NULL,
+      paid_amount DECIMAL(12,2) NULL DEFAULT NULL,
+      due_amount DECIMAL(12,2) NULL DEFAULT NULL,
+      next_payment_date DATE NULL,
+      last_pay_amount DECIMAL(12,2) NULL DEFAULT NULL,
+      last_pay_date DATE NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
+    $pdCols = [
+      "domain_name VARCHAR(150) NOT NULL DEFAULT ''",
+      "domain_booking_date DATE NULL",
+      "domain_amount DECIMAL(12,2) NULL DEFAULT NULL",
+      "server_name VARCHAR(150) NOT NULL DEFAULT ''",
+      "server_renewal_date DATE NULL",
+      "server_amount DECIMAL(12,2) NULL DEFAULT NULL",
+      "amc_date DATE NULL",
+      "amc_amount DECIMAL(12,2) NULL DEFAULT NULL",
+      "total_cost DECIMAL(12,2) NULL DEFAULT NULL",
+      "paid_amount DECIMAL(12,2) NULL DEFAULT NULL",
+      "due_amount DECIMAL(12,2) NULL DEFAULT NULL",
+      "next_payment_date DATE NULL",
+      "last_pay_amount DECIMAL(12,2) NULL DEFAULT NULL",
+      "last_pay_date DATE NULL",
+    ];
+    foreach ($pdCols as $def) {
+      try { $pdo->exec("ALTER TABLE project_details ADD COLUMN $def"); }
+      catch (PDOException $e) { if ($e->getCode() !== '42S21') throw $e; }
+    }
     try {
       $pdo->exec("ALTER TABLE project_details ADD COLUMN user_id INT NOT NULL DEFAULT 0");
     } catch (PDOException $e) {
