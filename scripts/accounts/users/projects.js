@@ -28,14 +28,36 @@
         const detHtml = !det ? '' :
           det.length <= 150 ? '<p class="text-[13px] text-navy-900/70 leading-relaxed break-words mb-1">' + esc(det) + '</p>' :
           '<div class="clamp-wrap mb-1"><p class="clamp-text clamp-3 text-[13px] text-navy-900/70 leading-relaxed">' + esc(det) + '</p><a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="clamp-btn inline-block">Show more</a></div>';
-        return '<div class="border border-navy-100 rounded p-4 hover:border-navy-700 transition flex flex-col">' +
-          '<div class="w-9 h-9 rounded bg-navy-50 flex items-center justify-center mb-2"><i class="bi bi-kanban text-navy"></i></div>' +
-          '<p class="font-bold text-navy mb-1 break-words"><a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="hover:text-gold-600 transition">' + esc(p.project_name) + '</a></p>' +
+        const pd = p.pd || {};
+        const money = (v) => (v !== null && v !== '' && v !== undefined) ? '₹' + esc(v) : '';
+        const dt = (v) => v ? esc(v) : '';
+        const vrow = (label, val) => val ? '<div class="flex justify-between gap-3 py-1 border-b border-navy-100/70 last:border-0"><span class="text-navy-900/50 text-[13px]">' + label + '</span><span class="text-navy-900/80 text-[13px] font-medium break-words text-right">' + val + '</span></div>' : '';
+        const extra =
+          vrow('Domain Name', pd.domain_name ? esc(pd.domain_name) : '') +
+          vrow('Domain Booking', dt(pd.domain_booking_date)) +
+          vrow('Domain Amount', money(pd.domain_amount)) +
+          vrow('Server Name', pd.server_name ? esc(pd.server_name) : '') +
+          vrow('Server Renewal', dt(pd.server_renewal_date)) +
+          vrow('Server Amount', money(pd.server_amount)) +
+          vrow('AMC Date', dt(pd.amc_date)) +
+          vrow('AMC Amount', money(pd.amc_amount)) +
+          vrow('MMC Date', dt(pd.mmc_date)) +
+          vrow('MMC Amount', money(pd.mmc_amount)) +
+          vrow('Total Cost', money(pd.total_cost)) +
+          vrow('Paid', money(pd.paid_amount)) +
+          vrow('Due Amount', money(pd.due_amount)) +
+          vrow('Next Payment', dt(pd.next_payment_date)) +
+          vrow('Last Pay Amount', money(pd.last_pay_amount)) +
+          vrow('Last Pay Date', dt(pd.last_pay_date));
+        return '<div class="border border-navy-100 rounded-xl p-6 hover:border-navy-700 transition flex flex-col">' +
+          '<div class="w-10 h-10 rounded bg-navy-50 flex items-center justify-center mb-3"><i class="bi bi-kanban text-navy text-lg"></i></div>' +
+          '<p class="font-bold text-lg text-navy mb-1.5 break-words"><a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="hover:text-gold-600 transition">' + esc(p.project_name) + '</a></p>' +
           detHtml +
-          '<p class="text-[13px] text-navy-900/60 mb-3">Added ' + esc(fmtDate(p.created_at)) + '</p>' +
-          '<div class="mt-auto flex gap-2">' +
-            '<a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 border border-navy-100 text-navy text-sm font-semibold px-4 py-2 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-info-circle"></i>Details</a>' +
-            '<a href="complaint.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 bg-navy text-white text-sm font-semibold px-4 py-2 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
+          (extra ? '<div class="my-2">' + extra + '</div>' : '') +
+          '<p class="text-sm text-navy-900/60 mb-4">Added ' + esc(fmtDate(p.created_at)) + '</p>' +
+          '<div class="mt-auto flex gap-2.5">' +
+            '<a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 border border-navy-100 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-info-circle"></i>Details</a>' +
+            '<a href="complaint.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
           '</div>' +
         '</div>';
       }).join('');

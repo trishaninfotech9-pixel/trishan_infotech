@@ -44,12 +44,34 @@
     function openProject(i) {
       const p = lastProjects[i];
       if (!p) return;
+      const pd = p.pd || {};
+      const money = (v) => (v !== null && v !== '' && v !== undefined) ? '₹' + esc(v) : '';
+      const dt = (v) => v ? esc(v) : '';
+      const vrow = (label, val) => val ? '<div class="flex justify-between gap-3 py-1.5 border-b border-navy-100/70 last:border-0"><span class="text-navy-900/50 text-[13px]">' + label + '</span><span class="text-navy-900/80 text-[13px] font-medium break-words text-right">' + val + '</span></div>' : '';
+      const extra =
+        vrow('Domain Name', pd.domain_name ? esc(pd.domain_name) : '') +
+        vrow('Domain Booking', dt(pd.domain_booking_date)) +
+        vrow('Domain Amount', money(pd.domain_amount)) +
+        vrow('Server Name', pd.server_name ? esc(pd.server_name) : '') +
+        vrow('Server Renewal', dt(pd.server_renewal_date)) +
+        vrow('Server Amount', money(pd.server_amount)) +
+        vrow('AMC Date', dt(pd.amc_date)) +
+        vrow('AMC Amount', money(pd.amc_amount)) +
+        vrow('MMC Date', dt(pd.mmc_date)) +
+        vrow('MMC Amount', money(pd.mmc_amount)) +
+        vrow('Total Cost', money(pd.total_cost)) +
+        vrow('Paid', money(pd.paid_amount)) +
+        vrow('Due Amount', money(pd.due_amount)) +
+        vrow('Next Payment', dt(pd.next_payment_date)) +
+        vrow('Last Pay Amount', money(pd.last_pay_amount)) +
+        vrow('Last Pay Date', dt(pd.last_pay_date));
       const bodyEl = document.getElementById('projModalBody');
       bodyEl.innerHTML =
         '<p class="font-extrabold text-xl text-navy break-words pr-8">' + esc(p.project_name) + '</p>' +
         '<p class="text-[13px] text-navy-900/60">' + esc(fmtDate(p.created_at)) + (p.open ? (p.complaint_id && p.page ? ' • <a href="' + p.page + '.html?focus=' + p.complaint_id + '" class="font-semibold text-gold-600 hover:underline">open complaint</a>' : ' • <span class="font-semibold text-gold-600">open complaint</span>') : '') + '</p>' +
         (p.details ? '<div><p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50 mb-1">Details</p><p class="text-sm text-navy-900/80 leading-relaxed break-words">' + esc(p.details) + '</p></div>' : '') +
-        ((p.budget !== null && p.budget !== '' && p.budget !== undefined) ? '<p class="text-sm font-bold text-navy">Budget: ₹' + esc(p.budget) + '</p>' : '');
+        ((p.budget !== null && p.budget !== '' && p.budget !== undefined) ? '<p class="text-sm font-bold text-navy">Budget: ₹' + esc(p.budget) + '</p>' : '') +
+        (extra ? '<div>' + extra + '</div>' : '');
       modal.classList.remove('hidden');
     }
 
@@ -101,10 +123,30 @@
               '<p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50">Add Project</p>' +
               '<input required type="text" maxlength="150" placeholder="Project name" class="u-name border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">' +
               '<textarea required rows="2" maxlength="2000" placeholder="Project details" class="u-det border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700"></textarea>' +
-              '<div class="flex items-center gap-2">' +
-                '<input required type="number" min="0" step="0.01" placeholder="Budget" class="u-bud border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">' +
-                '<button type="submit" class="shrink-0 bg-navy text-white text-sm font-semibold px-5 py-2.5 min-h-[44px] rounded hover:bg-navy-700 transition inline-flex items-center gap-2"><i class="bi bi-plus-circle"></i>Add</button>' +
+              '<div class="grid sm:grid-cols-2 gap-3">' + [
+                ['u-bud', 'Budget *', 'required type="number" min="0" step="0.01"'],
+                ['u-f-domain_name', 'Domain Name', 'type="text" maxlength="150"'],
+                ['u-f-domain_booking_date', 'Domain Booking Date', 'type="date"'],
+                ['u-f-domain_amount', 'Domain Amount', 'type="number" min="0" step="0.01"'],
+                ['u-f-server_name', 'Server Name', 'type="text" maxlength="150"'],
+                ['u-f-server_renewal_date', 'Server Renewal Date', 'type="date"'],
+                ['u-f-server_amount', 'Server Amount', 'type="number" min="0" step="0.01"'],
+                ['u-f-amc_date', 'AMC Date', 'type="date"'],
+                ['u-f-amc_amount', 'AMC Amount', 'type="number" min="0" step="0.01"'],
+                ['u-f-mmc_date', 'MMC Date', 'type="date"'],
+                ['u-f-mmc_amount', 'MMC Amount', 'type="number" min="0" step="0.01"'],
+                ['u-f-total_cost', 'Total Cost', 'type="number" min="0" step="0.01"'],
+                ['u-f-paid_amount', 'Paid', 'type="number" min="0" step="0.01"'],
+                ['u-f-due_amount', 'Due Amount', 'type="number" min="0" step="0.01"'],
+                ['u-f-next_payment_date', 'Next Payment Date', 'type="date"'],
+                ['u-f-last_pay_amount', 'Last Pay Amount', 'type="number" min="0" step="0.01"'],
+                ['u-f-last_pay_date', 'Last Pay Date', 'type="date"'],
+              ].map((f) =>
+                '<div><label class="block text-[12px] font-semibold text-navy mb-1">' + f[1] + '</label>' +
+                '<input ' + f[2] + ' class="' + f[0] + ' border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700"></div>'
+              ).join('') +
               '</div>' +
+                '<button type="submit" class="shrink-0 bg-navy text-white text-sm font-semibold px-5 py-2.5 min-h-[44px] rounded hover:bg-navy-700 transition inline-flex items-center gap-2"><i class="bi bi-plus-circle"></i>Add</button>' +
               '<p class="u-msg text-[13px] hidden"></p>' +
             '</form>' +
           '</div>' +
@@ -155,16 +197,21 @@
       const btn = form.querySelector('button[type="submit"]');
       btn.disabled = true;
       try {
+        const payload = {
+          admin_id: admin.id,
+          user_id: card.dataset.user,
+          project_name: nameEl.value.trim(),
+          details: detEl.value.trim(),
+          budget: budEl.value.trim(),
+        };
+        form.querySelectorAll('[class*="u-f-"]').forEach((el) => {
+          const key = Array.from(el.classList).find((c) => c.indexOf('u-f-') === 0).slice(4);
+          payload[key] = el.value.trim();
+        });
         await api('../../../api/accounts/admin/add-project.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            admin_id: admin.id,
-            user_id: card.dataset.user,
-            project_name: nameEl.value.trim(),
-            details: form.querySelector('.u-det').value.trim(),
-            budget: form.querySelector('.u-bud').value.trim(),
-          }),
+          body: JSON.stringify(payload),
         });
         msg.textContent = 'Project added.';
         msg.style.color = '';
@@ -175,6 +222,7 @@
         msg.textContent = err.message;
         msg.style.color = '#DC2626';
         msg.classList.remove('hidden');
+        msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       } finally {
         btn.disabled = false;
       }

@@ -46,6 +46,15 @@ try {
   $pdIds = [];
   foreach ($stmt->fetchAll() as $row) { $pdIds[strtolower(trim($row['project_name']))] = $row['id']; }
 
+  // Full project_details snapshot per project name (for card details).
+  $stmt = $pdo->prepare('SELECT * FROM project_details WHERE user_id = ?');
+  $stmt->execute([$user_id]);
+  $pdMap = [];
+  foreach ($stmt->fetchAll() as $row) { $pdMap[strtolower(trim($row['project_name']))] = $row; }
+  foreach ($assigned as &$p) {
+    $p['pd'] = $pdMap[strtolower(trim($p['project_name']))] ?? null;
+  }
+  unset($p);
   $seen = [];
   foreach ($assigned as &$p) {
     $p['source'] = 'assigned';

@@ -18,6 +18,18 @@ if ($budgetRaw !== '') {
   if (!is_numeric($budgetRaw) || (float)$budgetRaw < 0) json(['ok' => false, 'error' => 'Budget must be a positive number.'], 400);
   $budget = round((float)$budgetRaw, 2);
 }
+$opt = [];
+foreach (['domain_name', 'server_name'] as $k) { $opt[$k] = substr(trim((string)($in[$k] ?? '')), 0, 150); }
+foreach (['domain_booking_date', 'server_renewal_date', 'amc_date', 'mmc_date', 'next_payment_date', 'last_pay_date'] as $k) {
+  $v = trim((string)($in[$k] ?? ''));
+  if ($v !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $v)) json(['ok' => false, 'error' => 'Invalid date for ' . $k . '.'], 400);
+  $opt[$k] = $v === '' ? null : $v;
+}
+foreach (['domain_amount', 'server_amount', 'amc_amount', 'mmc_amount', 'total_cost', 'paid_amount', 'due_amount', 'last_pay_amount'] as $k) {
+  $v = trim((string)($in[$k] ?? ''));
+  if ($v !== '' && (!is_numeric($v) || (float)$v < 0)) json(['ok' => false, 'error' => 'Invalid amount for ' . $k . '.'], 400);
+  $opt[$k] = $v === '' ? null : round((float)$v, 2);
+}
 
 if ($admin_id <= 0) json(['ok' => false, 'error' => 'Admin login required.'], 401);
 if ($user_id <= 0) json(['ok' => false, 'error' => 'Select a user first.'], 400);
@@ -45,8 +57,8 @@ try {
     if ($e->getCode() === '23000') json(['ok' => false, 'error' => 'This project already exists for the user.'], 409);
     throw $e;
   }
-  $stmt = $pdo->prepare('INSERT INTO project_details (user_id, username, email, phone_no, project_name, project_details, budget) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE username = VALUES(username), email = VALUES(email), phone_no = VALUES(phone_no), project_details = VALUES(project_details), budget = VALUES(budget)');
-  $stmt->execute([$user_id, $username, $account['email'], $account['phone'], $project, $details, $budget]);
+  $stmt = $pdo->prepare('INSERT INTO project_details (user_id, username, email, phone_no, project_name, project_details, budget, domain_name, domain_booking_date, domain_amount, server_name, server_renewal_date, server_amount, amc_date, amc_amount, mmc_date, mmc_amount, total_cost, paid_amount, due_amount, next_payment_date, last_pay_amount, last_pay_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE username = VALUES(username), email = VALUES(email), phone_no = VALUES(phone_no), project_details = VALUES(project_details), budget = VALUES(budget), domain_name = VALUES(domain_name), domain_booking_date = VALUES(domain_booking_date), domain_amount = VALUES(domain_amount), server_name = VALUES(server_name), server_renewal_date = VALUES(server_renewal_date), server_amount = VALUES(server_amount), amc_date = VALUES(amc_date), amc_amount = VALUES(amc_amount), mmc_date = VALUES(mmc_date), mmc_amount = VALUES(mmc_amount), total_cost = VALUES(total_cost), paid_amount = VALUES(paid_amount), due_amount = VALUES(due_amount), next_payment_date = VALUES(next_payment_date), last_pay_amount = VALUES(last_pay_amount), last_pay_date = VALUES(last_pay_date)');
+  $stmt->execute([$user_id, $username, $account['email'], $account['phone'], $project, $details, $budget, $opt['domain_name'], $opt['domain_booking_date'], $opt['domain_amount'], $opt['server_name'], $opt['server_renewal_date'], $opt['server_amount'], $opt['amc_date'], $opt['amc_amount'], $opt['mmc_date'], $opt['mmc_amount'], $opt['total_cost'], $opt['paid_amount'], $opt['due_amount'], $opt['next_payment_date'], $opt['last_pay_amount'], $opt['last_pay_date']]);
   json(['ok' => true, 'message' => 'Project added.', 'project_id' => $project_id]);
 } catch (PDOException $e) {
   json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);

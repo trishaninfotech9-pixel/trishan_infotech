@@ -142,6 +142,8 @@ function db() {
       server_amount DECIMAL(12,2) NULL DEFAULT NULL,
       amc_date DATE NULL,
       amc_amount DECIMAL(12,2) NULL DEFAULT NULL,
+      mmc_date DATE NULL,
+      mmc_amount DECIMAL(12,2) NULL DEFAULT NULL,
       total_cost DECIMAL(12,2) NULL DEFAULT NULL,
       paid_amount DECIMAL(12,2) NULL DEFAULT NULL,
       due_amount DECIMAL(12,2) NULL DEFAULT NULL,
@@ -159,6 +161,8 @@ function db() {
       "server_amount DECIMAL(12,2) NULL DEFAULT NULL",
       "amc_date DATE NULL",
       "amc_amount DECIMAL(12,2) NULL DEFAULT NULL",
+      "mmc_date DATE NULL AFTER amc_amount",
+      "mmc_amount DECIMAL(12,2) NULL DEFAULT NULL AFTER mmc_date",
       "total_cost DECIMAL(12,2) NULL DEFAULT NULL",
       "paid_amount DECIMAL(12,2) NULL DEFAULT NULL",
       "due_amount DECIMAL(12,2) NULL DEFAULT NULL",
@@ -170,6 +174,9 @@ function db() {
       try { $pdo->exec("ALTER TABLE project_details ADD COLUMN $def"); }
       catch (PDOException $e) { if ($e->getCode() !== '42S21') throw $e; }
     }
+    // Keep MMC columns right beside the AMC ones.
+    $pdo->exec("ALTER TABLE project_details MODIFY COLUMN mmc_date DATE NULL AFTER amc_amount");
+    $pdo->exec("ALTER TABLE project_details MODIFY COLUMN mmc_amount DECIMAL(12,2) NULL DEFAULT NULL AFTER mmc_date");
     try {
       $pdo->exec("ALTER TABLE project_details ADD COLUMN user_id INT NOT NULL DEFAULT 0");
     } catch (PDOException $e) {
