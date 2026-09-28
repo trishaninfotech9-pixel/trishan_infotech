@@ -34,7 +34,21 @@ html {
   background: linear-gradient(90deg, #0C4A6E, #0369A1, #0EA5E9);
   transform: scaleX(0); transform-origin: left;
 }
-#siteNav { transition: box-shadow .35s ease, background-color .35s ease; }
+/* Hero split-word reveal (JS wraps each word; pure motion, no layout shift) */
+.w-line { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+.w-word { display: inline-block; will-change: transform; }
+
+/* Auto-hide navbar on scroll down */
+#siteNav { transition: box-shadow .35s ease, background-color .35s ease, transform .35s ease; }
+#siteNav.nav-hide { transform: translateY(-100%); }
+
+/* Ambient orbs injected into the home hero */
+.has-orbs { position: relative; }
+.orb { position: absolute; border-radius: 9999px; filter: blur(70px); pointer-events: none; }
+
+/* Tactile press on buttons */
+button:active { transform: scale(.97); }
+#menuBtn:active, #adminMenuBtn:active { transform: none; }
 #siteNav::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: linear-gradient(90deg, #0C4A6E, #0369A1 50%, #0EA5E9); }
 #siteNav.nav-scrolled { box-shadow: 0 8px 30px rgba(12,74,110,.12); }
 .js [data-animate] { opacity: 0; }

@@ -158,16 +158,24 @@
       loadNotifs();
       setInterval(loadNotifs, 30000);
     }
-    // Stat cards, if the page has any.
+    // Stat cards, if the page has any — count up for a live-dashboard feel.
     const statEls = document.querySelectorAll('[data-stat]');
     if (statEls.length && admin && admin.id) {
       try {
         const res = await fetch(BASE + 'api/accounts/admin/stats.php?admin_id=' + encodeURIComponent(admin.id));
         const body = await res.json().catch(() => null);
         if (body && body.ok) {
-          statEls.forEach((el) => {
+          const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+          statEls.forEach((el, i) => {
             const v = body.stats[el.getAttribute('data-stat')];
-            if (v !== undefined) el.textContent = v;
+            if (v === undefined) return;
+            const end = Math.max(0, parseInt(v, 10) || 0);
+            if (reduced || !window.anime) { el.textContent = end; return; }
+            const proxy = { n: 0 };
+            anime.animate(proxy, {
+              n: [0, end], duration: 1100, delay: i * 120, ease: 'out(3)',
+              onUpdate: () => { el.textContent = Math.round(proxy.n); },
+            });
           });
         }
       } catch (e) {}

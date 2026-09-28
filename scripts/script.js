@@ -195,14 +195,63 @@ function initMotion() {
   }
   document.documentElement.classList.add('js');
 
+  // Split hero titles into masked words for a staggered masked-line reveal.
+  // Recurses so inline elements (e.g. the welcome-name span) survive intact.
+  const splitWords = (el) => {
+    const walk = (node) => {
+      Array.from(node.childNodes).forEach((child) => {
+        if (child.nodeType === 3) {
+          const frag = document.createDocumentFragment();
+          child.textContent.split(/(\s+)/).forEach((part) => {
+            if (!part) return;
+            if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+            const line = document.createElement('span');
+            line.className = 'w-line';
+            const word = document.createElement('span');
+            word.className = 'w-word';
+            word.textContent = part;
+            line.appendChild(word);
+            frag.appendChild(line);
+          });
+          node.replaceChild(frag, child);
+        } else if (child.nodeType === 1) walk(child);
+      });
+    };
+    walk(el);
+  };
+  document.querySelectorAll('.hero-title').forEach(splitWords);
+
   // Hero entrance — starts instantly (never waits on component fetch),
   // short distances + soft landing for a smooth feel.
   anime.createTimeline({ defaults: { ease: 'out(4)', duration: 950 } })
     .add('.hero-badge', { opacity: [0, 1], y: [14, 0], duration: 700, delay: 120 })
-    .add('.hero-title', { opacity: [0, 1], y: [28, 0] }, '-=450')
+    .add('.hero-title', { opacity: [0, 1], duration: 250 }, '-=500')
+    .add('.hero-title .w-word', { y: ['112%', '0%'], rotate: [5, 0], duration: 900, delay: anime.stagger(55) }, '-=400')
     .add('.hero-lead', { opacity: [0, 1], y: [20, 0] }, '-=650')
     .add('.hero-actions a', { opacity: [0, 1], y: [16, 0], delay: anime.stagger(100) }, '-=650')
     .add('.hero-stats > div', { opacity: [0, 1], y: [16, 0], delay: anime.stagger(90) }, '-=600');
+
+  // Ambient floating orbs in the home hero (decorative, transform-only).
+  (function ambientOrbs() {
+    const hero = document.querySelector('section.overflow-hidden');
+    if (!hero) return;
+    hero.classList.add('has-orbs');
+    const orbs = [
+      { size: 340, x: '8%', y: '-60px', c1: '#BAE6FD', c2: '#E0F2FE', dx: 26, dy: 34, dur: 9000 },
+      { size: 260, x: '72%', y: '22%', c1: '#7DD3FC', c2: '#F0F9FF', dx: -30, dy: 24, dur: 11000 },
+    ];
+    orbs.forEach((o, i) => {
+      const el = document.createElement('div');
+      el.className = 'orb';
+      el.setAttribute('aria-hidden', 'true');
+      el.style.cssText = `width:${o.size}px;height:${o.size}px;left:${o.x};top:${o.y};background:radial-gradient(circle,${o.c1} 0%,${o.c2} 70%,transparent 72%);opacity:.55`;
+      hero.appendChild(el);
+      anime.animate(el, {
+        x: [0, o.dx], y: [0, o.dy], duration: o.dur, ease: 'inOut(2)',
+        alternate: true, loop: true, delay: i * 1200,
+      });
+    });
+  })();
 
   // Scroll reveals (once)
   const PRESETS = {
@@ -268,14 +317,25 @@ function initMotion() {
     });
   }
 
-  // Navbar shadow + scroll progress (nav is injected, so look it up per scroll)
+  // Navbar shadow + auto-hide + scroll progress (nav is injected, so look it up per scroll)
   const bar = document.querySelector('.scroll-progress');
+  let lastY = 0;
   addEventListener('scroll', () => {
     const h = document.documentElement;
     const max = h.scrollHeight - h.clientHeight;
     if (bar) bar.style.transform = `scaleX(${max > 0 ? h.scrollTop / max : 0})`;
     const nav = document.getElementById('siteNav');
-    if (nav) nav.classList.toggle('nav-scrolled', h.scrollTop > 24);
+    const y = h.scrollTop;
+    if (nav) {
+      nav.classList.toggle('nav-scrolled', y > 24);
+      if (!document.body.classList.contains('menu-open')) {
+        if (y > 320 && y > lastY + 4) nav.classList.add('nav-hide');
+        else if (y < lastY - 4 || y <= 320) nav.classList.remove('nav-hide');
+      } else {
+        nav.classList.remove('nav-hide');
+      }
+    }
+    lastY = y;
   }, { passive: true });
 }
 
