@@ -22,7 +22,7 @@ try {
   if (!$account) json(['ok' => false, 'error' => 'User not found.'], 404);
   $uname = trim(implode(' ', array_filter([$account['first_name'], $account['middle_name'], $account['last_name']])));
 
-  $stmt = $pdo->prepare('SELECT id, project_name, details, is_complete, created_at FROM projects WHERE user_id = ? ORDER BY id DESC');
+  $stmt = $pdo->prepare('SELECT id, project_name, details, is_complete, is_under_process, created_at FROM projects WHERE user_id = ? ORDER BY id DESC');
   $stmt->execute([$user_id]);
   $assigned = $stmt->fetchAll();
 
@@ -77,9 +77,9 @@ try {
     $seen[$key] = true;
     $assigned[] = ['id' => 0, 'project_name' => $c['project_name'], 'details' => $issueDetails[$key] ?? '', 'budget' => $budgets[$key] ?? null, 'username' => $uname, 'created_at' => $c['created_at'], 'source' => 'complaint', 'status' => 'pending', 'open' => isset($openNames[$key])];
   }
-  // Status is driven ONLY by the admin checkbox (projects.is_complete).
+  // Status is driven ONLY by the admin checkboxes (projects.is_complete / is_under_process).
   foreach ($assigned as &$p) {
-    $p['status'] = ((int)($p['is_complete'] ?? 0) === 1) ? 'complete' : 'pending';
+    $p['status'] = ((int)($p['is_complete'] ?? 0) === 1) ? 'complete' : (((int)($p['is_under_process'] ?? 0) === 1) ? 'process' : 'pending');
   }
   unset($p);
   // Latest complaint per project name → deep link to the section it belongs to.

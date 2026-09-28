@@ -10,13 +10,13 @@ if ($user_id <= 0) json(['ok' => false, 'error' => 'Login required.'], 401);
 
 try {
   $pdo = db();
-  $stmt = $pdo->prepare('SELECT id, first_name, middle_name, last_name, email, phone FROM users WHERE id = ? LIMIT 1');
+  $stmt = $pdo->prepare('SELECT id, first_name, middle_name, last_name, email, phone, status_seen_at FROM users WHERE id = ? LIMIT 1');
   $stmt->execute([$user_id]);
   $account = $stmt->fetch();
   if (!$account) json(['ok' => false, 'error' => 'User not found.'], 401);
   $uname = trim(implode(' ', array_filter([$account['first_name'], $account['middle_name'], $account['last_name']])));
 
-  $stmt = $pdo->prepare('SELECT id, project_name, details, is_complete, created_at FROM projects WHERE user_id = ? ORDER BY id DESC');
+  $stmt = $pdo->prepare('SELECT id, project_name, details, is_complete, is_under_process, status_updated_at, created_at FROM projects WHERE user_id = ? ORDER BY id DESC');
   $stmt->execute([$user_id]);
   $assigned = $stmt->fetchAll();
 
@@ -65,7 +65,7 @@ try {
     $p['username'] = $uname;
     $p['email'] = $account['email'];
     $p['phone_no'] = $account['phone'];
-    $p['status'] = ((int)($p['is_complete'] ?? 0) === 1) ? 'complete' : 'pending';
+    $p['status'] = ((int)($p['is_complete'] ?? 0) === 1) ? 'complete' : (((int)($p['is_under_process'] ?? 0) === 1) ? 'process' : 'pending');
   }
   unset($p);
   foreach ($fromComplaints as $c) {
@@ -74,7 +74,7 @@ try {
     $seen[$key] = true;
     $assigned[] = ['id' => 0, 'pd_id' => $pdIds[$key] ?? null, 'username' => $uname, 'email' => $account['email'], 'phone_no' => $account['phone'], 'project_name' => $c['project_name'], 'details' => $issueDetails[$key] ?? '', 'budget' => $budgets[$key] ?? null, 'created_at' => $c['created_at'], 'source' => 'complaint', 'status' => 'pending'];
   }
-  json(['ok' => true, 'projects' => $assigned]);
+  json(['ok' => true, 'projects' => $assigned, 'status_seen_at' => $account['status_seen_at']]);
 } catch (PDOException $e) {
   json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
 }

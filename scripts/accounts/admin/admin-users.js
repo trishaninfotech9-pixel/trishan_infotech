@@ -123,25 +123,25 @@
               '<input required type="text" maxlength="150" placeholder="Project name" class="u-name border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">' +
               '<textarea required rows="2" maxlength="2000" placeholder="Project details" class="u-det border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700"></textarea>' +
               '<div class="grid sm:grid-cols-2 gap-3">' + [
-                ['u-bud', 'Budget *', 'required type="number" min="0" step="0.01"'],
-                ['u-f-domain_name', 'Domain Name', 'type="text" maxlength="150"'],
-                ['u-f-domain_booking_date', 'Domain Booking Date', 'type="date"'],
-                ['u-f-domain_amount', 'Domain Amount', 'type="number" min="0" step="0.01"'],
-                ['u-f-server_name', 'Server Name', 'type="text" maxlength="150"'],
-                ['u-f-server_renewal_date', 'Server Renewal Date', 'type="date"'],
-                ['u-f-server_amount', 'Server Amount', 'type="number" min="0" step="0.01"'],
-                ['u-f-amc_date', 'AMC Date', 'type="date"'],
-                ['u-f-amc_amount', 'AMC Amount', 'type="number" min="0" step="0.01"'],
-                ['u-f-mmc_date', 'MMC Date', 'type="date"'],
-                ['u-f-mmc_amount', 'MMC Amount', 'type="number" min="0" step="0.01"'],
-                ['u-f-paid_amount', 'Paid', 'type="number" min="0" step="0.01"'],
-                ['u-f-due_amount', 'Due Amount', 'type="number" min="0" step="0.01"'],
-                ['u-f-next_payment_date', 'Next Payment Date', 'type="date"'],
-                ['u-f-last_pay_amount', 'Last Pay Amount', 'type="number" min="0" step="0.01"'],
-                ['u-f-last_pay_date', 'Last Pay Date', 'type="date"'],
+                ['u-bud', 'Budget', 'required type="number" min="0" step="0.01"'],
+                ['u-f-domain_name', 'Domain Name', 'required type="text" maxlength="150"'],
+                ['u-f-domain_booking_date', 'Domain Booking Date', 'required type="date"'],
+                ['u-f-domain_amount', 'Domain Amount', 'required type="number" min="0" step="0.01"'],
+                ['u-f-server_name', 'Server Name', 'required type="text" maxlength="150"'],
+                ['u-f-server_renewal_date', 'Server Renewal Date', 'required type="date"'],
+                ['u-f-server_amount', 'Server Amount', 'required type="number" min="0" step="0.01"'],
+                ['u-f-amc_date', 'AMC Date', 'required type="date"'],
+                ['u-f-amc_amount', 'AMC Amount', 'required type="number" min="0" step="0.01"'],
+                ['u-f-mmc_date', 'MMC Date', 'required type="date"'],
+                ['u-f-mmc_amount', 'MMC Amount', 'required type="number" min="0" step="0.01"'],
+                ['u-f-paid_amount', 'Paid', 'required type="number" min="0" step="0.01"'],
+                ['u-f-due_amount', 'Due Amount (auto)', 'readonly tabindex="-1" type="number" min="0" step="0.01" placeholder="Auto = Budget − Paid"', 'bg-navy-50/60 cursor-not-allowed'],
+                ['u-f-next_payment_date', 'Next Payment Date', 'required type="date"'],
+                ['u-f-last_pay_amount', 'Last Pay Amount', 'required type="number" min="0" step="0.01"'],
+                ['u-f-last_pay_date', 'Last Pay Date', 'required type="date"'],
               ].map((f) =>
-                '<div><label class="block text-[12px] font-semibold text-navy mb-1">' + f[1] + '</label>' +
-                '<input ' + f[2] + ' class="' + f[0] + ' border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700"></div>'
+                '<div><label class="block text-[12px] font-semibold text-navy mb-1">' + f[1] + (f[0] === 'u-f-due_amount' ? '' : ' *') + '</label>' +
+                '<input ' + f[2] + ' class="' + f[0] + ' border border-navy-100 rounded px-3.5 py-2 text-sm w-full ' + (f[3] || 'bg-white') + ' focus:outline-none focus:ring-2 focus:ring-navy-700"></div>'
               ).join('') +
               '</div>' +
                 '<button type="submit" class="shrink-0 bg-navy text-white text-sm font-semibold px-5 py-2.5 min-h-[44px] rounded hover:bg-navy-700 transition inline-flex items-center gap-2"><i class="bi bi-plus-circle"></i>Add</button>' +
@@ -178,6 +178,21 @@
       }
     });
 
+    // Auto-calc Due = Budget − Paid (due field is readonly, changes only with those two).
+    function recalcDue(form) {
+      const b = parseFloat(form.querySelector('.u-bud').value);
+      const p = parseFloat(form.querySelector('.u-f-paid_amount').value);
+      const dueEl = form.querySelector('.u-f-due_amount');
+      if (!dueEl) return;
+      if (isNaN(b)) { dueEl.value = ''; return; }
+      dueEl.value = String(Math.round(Math.max(0, b - (isNaN(p) ? 0 : p)) * 100) / 100);
+    }
+    box.addEventListener('input', (e) => {
+      if (!e.target.matches || !e.target.matches('.u-bud, .u-f-paid_amount')) return;
+      const form = e.target.closest('.u-add');
+      if (form) recalcDue(form);
+    });
+
     // Add project for the expanded user.
     box.addEventListener('submit', async (e) => {
       const form = e.target.closest('.u-add');
@@ -192,6 +207,7 @@
       if (!nameEl.value.trim()) { nameEl.focus(); nameEl.reportValidity(); return; }
       if (!detEl.value.trim()) { detEl.focus(); detEl.reportValidity(); return; }
       if (!budEl.value.trim()) { budEl.focus(); budEl.reportValidity(); return; }
+      recalcDue(form);
       const btn = form.querySelector('button[type="submit"]');
       btn.disabled = true;
       try {

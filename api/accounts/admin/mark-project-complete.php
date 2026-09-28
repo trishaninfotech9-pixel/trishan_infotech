@@ -26,9 +26,15 @@ try {
   if (!$account) json(['ok' => false, 'error' => 'User not found.'], 404);
 
   // Complaint-only names get adopted as assigned rows so the flag has a home.
+  // Complete and Under Process are mutually exclusive: completing clears the process flag.
   $username = trim(implode(' ', array_filter([$account['first_name'], $account['middle_name'], $account['last_name']])));
-  $stmt = $pdo->prepare('INSERT INTO projects (user_id, username, project_name, details, is_complete) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE is_complete = VALUES(is_complete)');
-  $stmt->execute([$user_id, $username, $project, '', $complete]);
+  if ($complete) {
+    $stmt = $pdo->prepare('INSERT INTO projects (user_id, username, project_name, details, is_complete, is_under_process, status_updated_at) VALUES (?, ?, ?, ?, 1, 0, NOW()) ON DUPLICATE KEY UPDATE is_complete = 1, is_under_process = 0, status_updated_at = NOW()');
+    $stmt->execute([$user_id, $username, $project, '']);
+  } else {
+    $stmt = $pdo->prepare('INSERT INTO projects (user_id, username, project_name, details, is_complete, is_under_process, status_updated_at) VALUES (?, ?, ?, ?, 0, 0, NOW()) ON DUPLICATE KEY UPDATE is_complete = 0, status_updated_at = NOW()');
+    $stmt->execute([$user_id, $username, $project, '']);
+  }
   json(['ok' => true, 'message' => $complete ? 'Marked as complete.' : 'Moved back to pending.', 'complete' => $complete]);
 } catch (PDOException $e) {
   json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);

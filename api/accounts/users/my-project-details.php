@@ -16,10 +16,10 @@ try {
   $stmt->execute([$user_id, $project]);
   $row = $stmt->fetch();
   if ($row) {
-    $st = $pdo->prepare('SELECT is_complete FROM projects WHERE user_id = ? AND LOWER(project_name) = LOWER(?) LIMIT 1');
+    $st = $pdo->prepare('SELECT is_complete, is_under_process FROM projects WHERE user_id = ? AND LOWER(project_name) = LOWER(?) LIMIT 1');
     $st->execute([$user_id, $project]);
     $pr = $st->fetch();
-    $row['status'] = ($pr && (int)$pr['is_complete'] === 1) ? 'complete' : 'pending';
+    $row['status'] = ($pr && (int)$pr['is_complete'] === 1) ? 'complete' : (($pr && (int)$pr['is_under_process'] === 1) ? 'process' : 'pending');
   }
   json(['ok' => true, 'details' => $row ?: null]);
 } catch (PDOException $e) {

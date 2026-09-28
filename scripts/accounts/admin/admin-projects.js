@@ -46,13 +46,16 @@
         const body = await res.json().catch(() => null);
         if (!body || !body.ok) throw new Error((body && body.error) || 'Failed to load.');
         let rows = body.projects || [];
-        if (MODE !== 'all') rows = rows.filter((p) => (p.status || 'pending') === MODE);
+        if (MODE === 'pending') rows = rows.filter((p) => (p.status || 'pending') !== 'complete');
+        else if (MODE !== 'all') rows = rows.filter((p) => (p.status || 'pending') === MODE);
         if (!rows.length) {
           list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center bg-white"><p class="text-sm text-navy-900/60">No ' + (MODE === 'all' ? '' : MODE + ' ') + 'projects for this user.</p></div>';
           return;
         }
         const trs = rows.map((p) => {
           const done = (p.status || 'pending') === 'complete';
+          const proc = (p.status || 'pending') === 'process';
+          const procCell = showCheck ? '<td class="' + cell + ' text-center"><input type="checkbox" class="proc-check w-5 h-5 accent-[#B45309]" data-name="' + esc(p.project_name) + '"' + (proc ? ' checked' : '') + ' title="Mark project as work under process" aria-label="Mark ' + esc(p.project_name) + ' as work under process"></td>' : '';
           const checkCell = showCheck ? '<td class="' + cell + ' text-center"><input type="checkbox" class="done-check w-5 h-5 accent-[#0C4A6E]" data-name="' + esc(p.project_name) + '"' + (done ? ' checked' : '') + ' title="Mark project as complete" aria-label="Mark ' + esc(p.project_name) + ' as complete"></td>' : '';
           const det = p.details ? String(p.details) : '';
           const detCell = !det ? '<span class="text-navy-900/40">—</span>'
@@ -63,11 +66,13 @@
             '<td class="' + cell + ' font-semibold text-navy">' + esc(p.project_name) + '</td>' +
             '<td class="' + cell + '">' + detCell + '</td>' +
             '<td class="' + cell + ' whitespace-nowrap">' + fmtBudget(p.budget) + '</td>' +
+            procCell +
             checkCell +
           '</tr>';
         }).join('');
         const cards = rows.map((p) => {
           const done = (p.status || 'pending') === 'complete';
+          const proc = (p.status || 'pending') === 'process';
           const cdet = p.details ? String(p.details) : '';
           const detCard = !cdet ? '—'
             : cdet.length <= 140 ? esc(cdet)
@@ -77,6 +82,7 @@
             '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Project</span><span class="font-semibold text-navy break-words text-right">' + esc(p.project_name) + '</span></div>' +
             '<div><span class="text-navy-900/50">Details</span><p class="break-words">' + detCard + '</p></div>' +
             '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Budget</span><span>' + fmtBudget(p.budget) + '</span></div>' +
+            (showCheck ? '<label class="flex items-center gap-2 pt-1 text-navy font-semibold cursor-pointer"><input type="checkbox" class="proc-check w-5 h-5 shrink-0 accent-[#B45309]" data-name="' + esc(p.project_name) + '"' + (proc ? ' checked' : '') + '>Work Under Process</label>' : '') +
             (showCheck ? '<label class="flex items-center gap-2 pt-1 text-navy font-semibold cursor-pointer"><input type="checkbox" class="done-check w-5 h-5 shrink-0 accent-[#0C4A6E]" data-name="' + esc(p.project_name) + '"' + (done ? ' checked' : '') + '>Complete</label>' : '') +
           '</div>';
         }).join('');
@@ -87,6 +93,7 @@
             '<th class="border border-navy-100 bg-navy-50 px-3.5 py-2.5 text-left text-[12px] font-bold text-navy">project_name</th>' +
             '<th class="border border-navy-100 bg-navy-50 px-3.5 py-2.5 text-left text-[12px] font-bold text-navy">project_details</th>' +
             '<th class="border border-navy-100 bg-navy-50 px-3.5 py-2.5 text-left text-[12px] font-bold text-navy">budget</th>' +
+            (showCheck ? '<th class="border border-navy-100 bg-navy-50 px-3.5 py-2.5 text-left text-[12px] font-bold text-navy">work under process</th>' : '') +
             (showCheck ? '<th class="border border-navy-100 bg-navy-50 px-3.5 py-2.5 text-left text-[12px] font-bold text-navy">complete</th>' : '') +
             '</tr></thead><tbody>' + trs + '</tbody></table></div>' +
           '<div class="md:hidden space-y-3">' + cards + '</div>';
@@ -98,17 +105,23 @@
     select.addEventListener('change', loadTable);
 
     list.addEventListener('change', async (e) => {
-      const box = e.target.closest('.done-check');
+      const box = e.target.closest('.done-check, .proc-check');
       if (!box) return;
       const uid = select.value;
       if (!uid) return;
+      const isProc = box.classList.contains('proc-check');
       const want = box.checked ? 1 : 0;
+      // Instant mutual exclusivity in the UI; the server enforces it too.
+      const row = box.closest('tr') || box.closest('div');
+      if (want && row) row.querySelectorAll(isProc ? '.done-check' : '.proc-check').forEach((o) => { o.checked = false; });
       box.disabled = true;
       try {
-        const res = await fetch('../../../api/accounts/admin/mark-project-complete.php', {
+        const res = await fetch(isProc ? '../../../api/accounts/admin/mark-project-process.php' : '../../../api/accounts/admin/mark-project-complete.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ admin_id: admin.id, user_id: uid, project_name: box.dataset.name, complete: want }),
+          body: JSON.stringify(isProc
+            ? { admin_id: admin.id, user_id: uid, project_name: box.dataset.name, process: want }
+            : { admin_id: admin.id, user_id: uid, project_name: box.dataset.name, complete: want }),
         });
         const body = await res.json().catch(() => null);
         if (!body || !body.ok) throw new Error((body && body.error) || 'Could not update.');

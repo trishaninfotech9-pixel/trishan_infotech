@@ -37,6 +37,18 @@ if ($project === '' || strlen($project) > 150) json(['ok' => false, 'error' => '
 if ($details === '') json(['ok' => false, 'error' => 'Project details are required.'], 400);
 if (strlen($details) > 2000) json(['ok' => false, 'error' => 'Details too long (max 2000 chars).'], 400);
 if ($budgetRaw === '') json(['ok' => false, 'error' => 'Budget is required.'], 400);
+// Every billing field is mandatory.
+foreach (['domain_name', 'server_name'] as $k) {
+  if ($opt[$k] === '') json(['ok' => false, 'error' => 'All fields are required: missing ' . $k . '.'], 400);
+}
+foreach (['domain_booking_date', 'server_renewal_date', 'amc_date', 'mmc_date', 'next_payment_date', 'last_pay_date'] as $k) {
+  if ($opt[$k] === null) json(['ok' => false, 'error' => 'All fields are required: missing ' . $k . '.'], 400);
+}
+foreach (['domain_amount', 'server_amount', 'amc_amount', 'mmc_amount', 'paid_amount', 'last_pay_amount'] as $k) {
+  if ($opt[$k] === null) json(['ok' => false, 'error' => 'All fields are required: missing ' . $k . '.'], 400);
+}
+// Due is always derived server-side: Budget − Paid (client value never trusted).
+$opt['due_amount'] = round(max(0, (float)$budget - (float)$opt['paid_amount']), 2);
 
 try {
   $pdo = db();

@@ -26,14 +26,33 @@
 
     list.innerHTML = '<p class="text-sm text-navy-900/60 text-center">Loading…</p>';
     try {
-      const res = await fetch('../../../api/accounts/users/my-complaints.php?user_id=' + encodeURIComponent(user.id));
-      const body = await res.json().catch(() => null);
+      const [rc, rp] = await Promise.all([
+        fetch('../../../api/accounts/users/my-complaints.php?user_id=' + encodeURIComponent(user.id)),
+        fetch('../../../api/accounts/users/my-projects.php?user_id=' + encodeURIComponent(user.id)),
+      ]);
+      const body = await rc.json().catch(() => null);
+      const pbody = await rp.json().catch(() => null);
       if (!body || !body.ok) throw new Error((body && body.error) || 'Failed to load.');
-      if (!body.complaints.length) {
+      // Project status changes (Work Under Process / Completed), same card style as responses.
+      const updates = ((pbody && pbody.ok && pbody.projects) || []).filter((p) => p.status === 'complete' || p.status === 'process');
+      const statusHtml = !updates.length ? '' :
+        '<div class="mb-5"><p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50 mb-2">Project status updates (' + updates.length + ')</p>' +
+        '<div class="space-y-3">' + updates.map((p) => {
+          const done = p.status === 'complete';
+          return '<div class="border border-navy-100 rounded p-4 overflow-hidden">' +
+            '<div class="flex items-center justify-between gap-2 mb-1">' +
+              '<p class="text-sm font-bold text-navy break-words min-w-0">' + esc(p.project_name) + '</p>' +
+              '<span class="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (done ? 'text-green-700 bg-green-50' : 'text-amber-700 bg-amber-50') + '">' + (done ? 'Completed' : 'Work Under Process') + '</span>' +
+            '</div>' +
+            '<p class="text-[11px] text-navy-900/50 mb-2">' + esc(fmtDate(p.status_updated_at || p.created_at)) + '</p>' +
+            '<div class="bg-navy-50 border border-navy-100 rounded p-3 break-words"><p class="text-sm text-navy-900/80 leading-relaxed break-words">' + (done ? 'Your project has been marked as completed.' : 'Your project is currently work under process.') + '</p><p class="text-[11px] text-navy-900/50 mt-1">Admin</p></div>' +
+          '</div>';
+        }).join('') + '</div></div>';
+      if (!body.complaints.length && !updates.length) {
         list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-navy-900/70"><i class="bi bi-inbox me-1"></i>No complaints yet.</p><a href="complaint.html" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-gold-600 hover:text-navy transition"><i class="bi bi-flag"></i>Go to Complaint box</a></div>';
         return;
       }
-      list.innerHTML = body.complaints.map((c) => {
+      list.innerHTML = statusHtml + body.complaints.map((c) => {
         const replied = c.responses.length > 0;
         const issues = c.issues.map((i) => '<li class="text-sm text-navy-900/80 leading-relaxed break-words">• ' + esc(i.description) + '</li>').join('');
         const responses = replied

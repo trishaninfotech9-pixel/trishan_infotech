@@ -20,6 +20,7 @@ function db() {
       phone VARCHAR(15) NOT NULL UNIQUE,
       email VARCHAR(100) NOT NULL UNIQUE,
       password_hash VARCHAR(255) NOT NULL,
+      status_seen_at TIMESTAMP NULL DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
     $pdo->exec("CREATE TABLE IF NOT EXISTS admins (
@@ -59,6 +60,11 @@ function db() {
       if ($e->getCode() !== '42S21') throw $e;
     }
     $pdo->exec("UPDATE complaints c JOIN users u ON u.id = c.user_id SET c.username = TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) WHERE c.username = ''");
+    try {
+      $pdo->exec("ALTER TABLE users ADD COLUMN status_seen_at TIMESTAMP NULL DEFAULT NULL");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
     $pdo->exec("CREATE TABLE IF NOT EXISTS complaint_issues (
       id INT AUTO_INCREMENT PRIMARY KEY,
       complaint_id INT NOT NULL,
@@ -99,6 +105,8 @@ function db() {
       project_name VARCHAR(150) NOT NULL,
       details TEXT NOT NULL,
       is_complete TINYINT(1) NOT NULL DEFAULT 0,
+      is_under_process TINYINT(1) NOT NULL DEFAULT 0,
+      status_updated_at TIMESTAMP NULL DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       UNIQUE KEY uq_user_project (user_id, project_name),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -118,6 +126,18 @@ function db() {
     } catch (PDOException $e) {
       if ($e->getCode() !== '42S21') throw $e;
     }
+    try {
+      $pdo->exec("ALTER TABLE projects ADD COLUMN is_under_process TINYINT(1) NOT NULL DEFAULT 0");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
+    try {
+      $pdo->exec("ALTER TABLE projects ADD COLUMN status_updated_at TIMESTAMP NULL DEFAULT NULL");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
+    // One-time catch-up: projects already flagged before timestamps existed notify once.
+    $pdo->exec("UPDATE projects SET status_updated_at = NOW() WHERE status_updated_at IS NULL AND (is_complete = 1 OR is_under_process = 1)");
     $pdo->exec("UPDATE projects p JOIN users u ON u.id = p.user_id SET p.username = TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) WHERE p.username = ''");
     $pdo->exec("CREATE OR REPLACE VIEW user_all_projects AS
       SELECT p.user_id, TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) AS username, p.project_name, p.details, 'assigned' AS source, p.created_at

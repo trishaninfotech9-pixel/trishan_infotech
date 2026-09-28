@@ -15,7 +15,10 @@ try {
   $pdo = db();
   $stmt = $pdo->prepare('UPDATE complaint_responses r JOIN complaints c ON c.id = r.complaint_id SET r.seen = 1 WHERE c.user_id = ? AND r.seen = 0');
   $stmt->execute([$user_id]);
-  json(['ok' => true, 'marked' => $stmt->rowCount()]);
+  $marked = $stmt->rowCount();
+  $stmt = $pdo->prepare('UPDATE users SET status_seen_at = NOW() WHERE id = ?');
+  $stmt->execute([$user_id]);
+  json(['ok' => true, 'marked' => $marked]);
 } catch (PDOException $e) {
   json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
 }

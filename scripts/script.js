@@ -172,11 +172,25 @@ function updateAuthNav(base, current, inPages, loggedIn, adminOnly) {
 // Red dot + white count on the Response nav link; hidden when zero.
 async function updateResponseBadge(base, userId) {
   try {
-    const res = await fetch(base + 'api/accounts/users/my-complaints.php?user_id=' + encodeURIComponent(userId));
-    const body = await res.json().catch(() => null);
+    const [rc, rp] = await Promise.all([
+      fetch(base + 'api/accounts/users/my-complaints.php?user_id=' + encodeURIComponent(userId)),
+      fetch(base + 'api/accounts/users/my-projects.php?user_id=' + encodeURIComponent(userId)),
+    ]);
+    const body = await rc.json().catch(() => null);
+    const pbody = await rp.json().catch(() => null);
     let n = 0;
     if (body && body.ok) {
       body.complaints.forEach((c) => (c.responses || []).forEach((r) => { if (!+r.seen) n++; }));
+    }
+    // Unseen project status updates (Work Under Process / Completed).
+    if (pbody && pbody.ok) {
+      const seenAt = pbody.status_seen_at ? new Date(String(pbody.status_seen_at).replace(' ', 'T') + 'Z').getTime() : 0;
+      (pbody.projects || []).forEach((p) => {
+        if (p.status !== 'complete' && p.status !== 'process') return;
+        if (!seenAt) { n++; return; }
+        const t = p.status_updated_at ? new Date(String(p.status_updated_at).replace(' ', 'T') + 'Z').getTime() : 0;
+        if (t && t > seenAt) n++;
+      });
     }
     document.querySelectorAll('[data-response-badge]').forEach((b) => {
       b.textContent = n > 99 ? '99+' : String(n);
