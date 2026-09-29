@@ -10,17 +10,64 @@
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const fmtDate = (d) => {
       try {
-        return new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(String(d).replace(' ', 'T') + 'Z'));
+        return new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(String(d).replace(' ', 'T') + '+05:30'));
+      } catch (e) { return d; }
+    };
+    const fmtDateTime = (d) => {
+      try {
+        return new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }).format(new Date(String(d).replace(' ', 'T') + '+05:30'));
       } catch (e) { return d; }
     };
 
     list.innerHTML = '<p class="text-sm text-navy-900/60 text-center">Loading…</p>';
+    // Log Menu dropdown (one open at a time, closes on outside click / Escape).
+    const closeLogMenus = () => list.querySelectorAll('.logmenu').forEach((m) => m.classList.add('hidden'));
+    list.addEventListener('click', (e) => {
+      const lm = e.target.closest('.logmenu-toggle');
+      if (!lm || !list.contains(lm)) return;
+      const menu = lm.parentElement.querySelector('.logmenu');
+      if (!menu) return;
+      const willOpen = menu.classList.contains('hidden');
+      closeLogMenus();
+      if (!willOpen) return;
+      menu.classList.remove('hidden');
+      if (menu.dataset.loaded) return;
+      menu.dataset.loaded = '1';
+      menu.innerHTML = '<p class="px-4 py-3 text-sm text-navy-900/50">Loading log…</p>';
+      fetch('../../../api/accounts/users/my-project-log.php?user_id=' + encodeURIComponent(user.id) + '&project=' + encodeURIComponent(lm.dataset.project))
+        .then((r) => r.json().catch(() => null))
+        .then((b) => {
+          if (!b || !b.ok) throw new Error('Failed to load log.');
+          const items = [];
+          (b.complaints || []).forEach((c) => {
+            items.push({ t: c.created_at || '', kind: 'complaint' });
+            if (+c.is_solved === 1 && c.solved_at) items.push({ t: c.solved_at, kind: 'solved' });
+          });
+          (b.events || []).forEach((v) => items.push({ t: v.created_at || '', kind: v.event }));
+          items.sort((a, c2) => String(a.t).localeCompare(String(c2.t)));
+          if (!items.length) { menu.innerHTML = '<p class="px-4 py-3 text-sm text-navy-900/50">No log entries yet.</p>'; return; }
+          const row = (icon, text, t) => '<div class="flex items-center gap-2.5 px-4 py-2.5 border-b border-navy-100/70 last:border-0"><i class="' + icon + ' text-navy shrink-0"></i><span class="flex-1 text-[13px] text-navy-900/80">' + text + '</span><span class="shrink-0 text-[12px] text-navy-900/50 whitespace-nowrap">' + esc(fmtDateTime(t)) + '</span></div>';
+          menu.innerHTML = items.map((it) =>
+            it.kind === 'complaint' ? row('bi bi-flag', 'Complaint sent', it.t) :
+            it.kind === 'process' ? row('bi bi-hourglass-split', 'Work under process', it.t) :
+            it.kind === 'complete' ? row('bi bi-check-circle', 'Completed', it.t) :
+            it.kind === 'solved' ? row('bi bi-check2-circle', 'Complaint solved', it.t) :
+            row('bi bi-dot', esc(it.kind), it.t)
+          ).join('');
+        })
+        .catch(() => { menu.innerHTML = '<p class="px-4 py-3 text-sm text-red-600">Could not load log.</p>'; menu.dataset.loaded = ''; });
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.logmenu-toggle') && !e.target.closest('.logmenu')) closeLogMenus();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLogMenus(); });
     // Expand / collapse a project card (one open at a time).
     list.addEventListener('click', (e) => {
       const t = e.target.closest('.proj-toggle');
       if (!t || !list.contains(t)) return;
       const bodyEl = t.parentElement.querySelector('.proj-body');
       if (!bodyEl) return;
+      closeLogMenus();
       const willOpen = bodyEl.classList.contains('hidden');
       list.querySelectorAll('.proj-body').forEach((b) => b.classList.add('hidden'));
       list.querySelectorAll('.proj-chev').forEach((c) => { c.style.transform = ''; });
@@ -46,7 +93,7 @@
         const pd = p.pd || {};
         const money = (v) => (v !== null && v !== '' && v !== undefined) ? '₹' + esc(v) : '';
         const dt = (v) => v ? esc(v) : '';
-        const vrow = (label, val) => val ? '<div class="flex justify-between gap-3 py-1 border-b border-navy-100/70 last:border-0"><span class="text-navy-900/50 text-[13px]">' + label + '</span><span class="text-navy-900/80 text-[13px] font-medium break-words text-right">' + val + '</span></div>' : '';
+        const vrow = (label, val) => val ? '<div class="flex justify-between gap-3 py-1 border-b border-navy-100/70 last:border-0"><span class="shrink-0 text-navy-900/50 text-[13px]">' + label + '</span><span class="min-w-0 text-navy-900/80 text-[13px] font-medium break-all text-right">' + val + '</span></div>' : '';
         const extra =
           vrow('Domain Name', pd.domain_name ? esc(pd.domain_name) : '') +
           vrow('Domain Booking', dt(pd.domain_booking_date)) +
@@ -76,6 +123,10 @@
             '<div class="mt-4 flex gap-2.5">' +
               '<a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 border border-navy-100 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-info-circle"></i>Details</a>' +
               '<a href="complaint.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
+            '</div>' +
+            '<div class="relative mt-2.5">' +
+              '<button type="button" class="logmenu-toggle w-full border border-navy-100 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2" data-project="' + esc(p.project_name) + '"><i class="bi bi-list-ul"></i>Log Menu<i class="bi bi-chevron-down text-xs"></i></button>' +
+              '<div class="logmenu hidden absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 w-[320px] max-w-[88vw] bg-white border border-navy-100 rounded-xl shadow-lg overflow-hidden z-10 max-h-64 overflow-y-auto"></div>' +
             '</div>' +
           '</div>' +
         '</div>';

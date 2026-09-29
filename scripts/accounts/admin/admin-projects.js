@@ -78,10 +78,10 @@
             : cdet.length <= 140 ? esc(cdet)
             : esc(cdet.slice(0, 140)) + '… <a href="project_details.html?user_id=' + encodeURIComponent(uid) + '&project=' + encodeURIComponent(p.project_name) + '" class="clamp-btn">see more</a>';
           return '<div class="border border-navy-100 rounded p-4 bg-white space-y-1.5 text-sm">' +
-            '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Username</span><span class="font-semibold text-navy break-words text-right">' + esc(p.username || '') + '</span></div>' +
-            '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Project</span><span class="font-semibold text-navy break-words text-right">' + esc(p.project_name) + '</span></div>' +
+            '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">Username</span><span class="min-w-0 font-semibold text-navy break-words text-right">' + esc(p.username || '') + '</span></div>' +
+            '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">Project</span><span class="min-w-0 font-semibold text-navy break-words text-right">' + esc(p.project_name) + '</span></div>' +
             '<div><span class="text-navy-900/50">Details</span><p class="break-words">' + detCard + '</p></div>' +
-            '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Budget</span><span>' + fmtBudget(p.budget) + '</span></div>' +
+            '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">Budget</span><span class="min-w-0 break-words text-right">' + fmtBudget(p.budget) + '</span></div>' +
             (showCheck ? '<label class="flex items-center gap-2 pt-1 text-navy font-semibold cursor-pointer"><input type="checkbox" class="proc-check w-5 h-5 shrink-0 accent-[#B45309]" data-name="' + esc(p.project_name) + '"' + (proc ? ' checked' : '') + '>Work Under Process</label>' : '') +
             (showCheck ? '<label class="flex items-center gap-2 pt-1 text-navy font-semibold cursor-pointer"><input type="checkbox" class="done-check w-5 h-5 shrink-0 accent-[#0C4A6E]" data-name="' + esc(p.project_name) + '"' + (done ? ' checked' : '') + '>Complete</label>' : '') +
           '</div>';

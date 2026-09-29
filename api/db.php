@@ -36,6 +36,7 @@ function db() {
       user_id INT NOT NULL,
       username VARCHAR(150) NOT NULL DEFAULT '',
       project_name VARCHAR(150) NOT NULL,
+      solved_at TIMESTAMP NULL DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )");
@@ -59,6 +60,13 @@ function db() {
     } catch (PDOException $e) {
       if ($e->getCode() !== '42S21') throw $e;
     }
+    try {
+      $pdo->exec("ALTER TABLE complaints ADD COLUMN solved_at TIMESTAMP NULL DEFAULT NULL");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
+    // One-time catch-up: already-solved complaints get their latest response time as solved time.
+    $pdo->exec("UPDATE complaints c SET c.solved_at = (SELECT MAX(r.created_at) FROM complaint_responses r WHERE r.complaint_id = c.id) WHERE c.is_solved = 1 AND c.solved_at IS NULL AND EXISTS (SELECT 1 FROM complaint_responses r WHERE r.complaint_id = c.id)");
     $pdo->exec("UPDATE complaints c JOIN users u ON u.id = c.user_id SET c.username = TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) WHERE c.username = ''");
     try {
       $pdo->exec("ALTER TABLE users ADD COLUMN status_seen_at TIMESTAMP NULL DEFAULT NULL");
@@ -208,6 +216,22 @@ function db() {
     } catch (PDOException $e) {
       if ($e->getCode() !== '42S21' && ($e->errorInfo[1] ?? 0) != 1061) throw $e;
     }
+    // Project status history: one row per admin flag change (process / complete).
+    $pdo->exec("CREATE TABLE IF NOT EXISTS project_status_log (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      project_name VARCHAR(150) NOT NULL,
+      event VARCHAR(20) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      KEY idx_psl_user_project (user_id, project_name)
+    )");
+    // One-time catch-up for flags set before the log existed.
+    $pdo->exec("INSERT INTO project_status_log (user_id, project_name, event, created_at)
+      SELECT p.user_id, p.project_name, 'complete', COALESCE(p.status_updated_at, p.created_at) FROM projects p
+      WHERE p.is_complete = 1 AND NOT EXISTS (SELECT 1 FROM project_status_log l WHERE l.user_id = p.user_id AND l.project_name = p.project_name AND l.event = 'complete')");
+    $pdo->exec("INSERT INTO project_status_log (user_id, project_name, event, created_at)
+      SELECT p.user_id, p.project_name, 'process', COALESCE(p.status_updated_at, p.created_at) FROM projects p
+      WHERE p.is_under_process = 1 AND NOT EXISTS (SELECT 1 FROM project_status_log l WHERE l.user_id = p.user_id AND l.project_name = p.project_name AND l.event = 'process')");
   }
   return $pdo;
 }

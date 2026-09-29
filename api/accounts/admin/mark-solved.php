@@ -34,8 +34,8 @@ try {
     }
   }
 
-  $stmt = $pdo->prepare('UPDATE complaints SET is_solved = ? WHERE id = ?');
-  $stmt->execute([$solved, $complaint_id]);
+  $stmt = $pdo->prepare('UPDATE complaints SET is_solved = ?, solved_at = IF(? , NOW(), NULL) WHERE id = ?');
+  $stmt->execute([$solved, $solved, $complaint_id]);
   json(['ok' => true, 'message' => $solved ? 'Marked as solved.' : 'Moved back to new.', 'is_solved' => $solved]);
 } catch (PDOException $e) {
   json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);

@@ -184,11 +184,11 @@ async function updateResponseBadge(base, userId) {
     }
     // Unseen project status updates (Work Under Process / Completed).
     if (pbody && pbody.ok) {
-      const seenAt = pbody.status_seen_at ? new Date(String(pbody.status_seen_at).replace(' ', 'T') + 'Z').getTime() : 0;
+      const seenAt = pbody.status_seen_at ? new Date(String(pbody.status_seen_at).replace(' ', 'T') + '+05:30').getTime() : 0;
       (pbody.projects || []).forEach((p) => {
         if (p.status !== 'complete' && p.status !== 'process') return;
         if (!seenAt) { n++; return; }
-        const t = p.status_updated_at ? new Date(String(p.status_updated_at).replace(' ', 'T') + 'Z').getTime() : 0;
+        const t = p.status_updated_at ? new Date(String(p.status_updated_at).replace(' ', 'T') + '+05:30').getTime() : 0;
         if (t && t > seenAt) n++;
       });
     }

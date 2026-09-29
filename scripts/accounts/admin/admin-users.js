@@ -10,7 +10,7 @@
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const fmtDate = (d) => {
       try {
-        return new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(String(d).replace(' ', 'T') + 'Z'));
+        return new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(String(d).replace(' ', 'T') + '+05:30'));
       } catch (e) { return d; }
     };
     const trashSVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#DC2626" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3V2h11v1z"/></svg>';
@@ -47,7 +47,7 @@
       const pd = p.pd || {};
       const money = (v) => (v !== null && v !== '' && v !== undefined) ? '₹' + esc(v) : '';
       const dt = (v) => v ? esc(v) : '';
-      const vrow = (label, val) => val ? '<div class="flex justify-between gap-3 py-1.5 border-b border-navy-100/70 last:border-0"><span class="text-navy-900/50 text-[13px]">' + label + '</span><span class="text-navy-900/80 text-[13px] font-medium break-words text-right">' + val + '</span></div>' : '';
+      const vrow = (label, val) => val ? '<div class="flex justify-between gap-3 py-1.5 border-b border-navy-100/70 last:border-0"><span class="shrink-0 text-navy-900/50 text-[13px]">' + label + '</span><span class="min-w-0 text-navy-900/80 text-[13px] font-medium break-all text-right">' + val + '</span></div>' : '';
       const extra =
         vrow('Domain Name', pd.domain_name ? esc(pd.domain_name) : '') +
         vrow('Domain Booking', dt(pd.domain_booking_date)) +

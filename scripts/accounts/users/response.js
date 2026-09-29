@@ -15,7 +15,7 @@
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const fmtDate = (d) => {
       try {
-        return new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(d.replace(' ', 'T') + 'Z'));
+        return new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(d.replace(' ', 'T') + '+05:30'));
       } catch (e) { return d; }
     };
 
@@ -40,8 +40,8 @@
         '<div class="space-y-3">' + updates.map((p) => {
           const done = p.status === 'complete';
           return '<div class="border border-navy-100 rounded p-4 overflow-hidden">' +
-            '<div class="flex items-center justify-between gap-2 mb-1">' +
-              '<p class="text-sm font-bold text-navy break-words min-w-0">' + esc(p.project_name) + '</p>' +
+            '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+              '<p class="flex-1 text-sm font-bold text-navy leading-snug break-words min-w-0">' + esc(p.project_name) + '</p>' +
               '<span class="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (done ? 'text-green-700 bg-green-50' : 'text-amber-700 bg-amber-50') + '">' + (done ? 'Completed' : 'Work Under Process') + '</span>' +
             '</div>' +
             '<p class="text-[11px] text-navy-900/50 mb-2">' + esc(fmtDate(p.status_updated_at || p.created_at)) + '</p>' +
@@ -59,8 +59,8 @@
           ? c.responses.map((r) => '<div class="bg-navy-50 border border-navy-100 rounded p-3 break-words"><p class="text-sm text-navy-900/80 leading-relaxed break-words">' + esc(r.response) + '</p><p class="text-[11px] text-navy-900/50 mt-1">' + esc(r.admin || 'Admin') + ' • ' + esc(fmtDate(r.created_at)) + '</p></div>').join('')
           : '<p class="text-[13px] text-navy-900/50">Awaiting admin response…</p>';
         return '<div class="border border-navy-100 rounded p-4 overflow-hidden">' +
-          '<div class="flex items-center justify-between gap-2 mb-1">' +
-            '<p class="text-sm font-bold text-navy break-words min-w-0">' + esc(c.project_name) + '</p>' +
+          '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+            '<p class="flex-1 text-sm font-bold text-navy leading-snug break-words min-w-0">' + esc(c.project_name) + '</p>' +
             '<span class="flex items-center gap-1.5 shrink-0">' +
               '<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (replied ? 'text-green-700 bg-green-50' : 'text-gold-600 bg-navy-50') + '">' + (replied ? 'Replied' : 'Pending') + '</span>' +
               '<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (+c.is_solved === 1 ? 'text-green-700 bg-green-50' : 'text-red-600 bg-red-50') + '">' + (+c.is_solved === 1 ? 'Solved' : 'Unsolved') + '</span>' +

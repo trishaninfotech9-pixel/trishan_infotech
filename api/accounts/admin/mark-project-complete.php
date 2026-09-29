@@ -31,6 +31,8 @@ try {
   if ($complete) {
     $stmt = $pdo->prepare('INSERT INTO projects (user_id, username, project_name, details, is_complete, is_under_process, status_updated_at) VALUES (?, ?, ?, ?, 1, 0, NOW()) ON DUPLICATE KEY UPDATE is_complete = 1, is_under_process = 0, status_updated_at = NOW()');
     $stmt->execute([$user_id, $username, $project, '']);
+    $log = $pdo->prepare("INSERT INTO project_status_log (user_id, project_name, event) VALUES (?, ?, 'complete')");
+    $log->execute([$user_id, $project]);
   } else {
     $stmt = $pdo->prepare('INSERT INTO projects (user_id, username, project_name, details, is_complete, is_under_process, status_updated_at) VALUES (?, ?, ?, ?, 0, 0, NOW()) ON DUPLICATE KEY UPDATE is_complete = 0, status_updated_at = NOW()');
     $stmt->execute([$user_id, $username, $project, '']);

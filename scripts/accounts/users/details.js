@@ -9,7 +9,7 @@
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const fmtDate = (d) => {
       try {
-        return new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(String(d).replace(' ', 'T') + 'Z'));
+        return new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(String(d).replace(' ', 'T') + '+05:30'));
       } catch (e) { return d; }
     };
 
@@ -103,13 +103,13 @@
         ).join('');
         const cards = mp.projects.map((p) =>
           '<a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="block border border-navy-100 rounded p-4 bg-white space-y-1.5 text-sm">' +
-            '<div class="flex justify-between gap-2"><span class="text-navy-900/50">ID</span><span class="font-semibold text-navy">' + (p.pd_id ? esc(p.pd_id) : '—') + '</span></div>' +
-            '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Username</span><span class="font-semibold text-navy break-words text-right">' + esc(p.username || '') + '</span></div>' +
-            '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Email</span><span class="break-words text-right">' + esc(p.email || '') + '</span></div>' +
-            '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Phone</span><span class="text-right">' + esc(p.phone_no || '') + '</span></div>' +
-            '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Project</span><span class="font-semibold text-navy break-words text-right">' + esc(p.project_name) + '</span></div>' +
+            '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">ID</span><span class="min-w-0 font-semibold text-navy break-words text-right">' + (p.pd_id ? esc(p.pd_id) : '—') + '</span></div>' +
+            '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">Username</span><span class="min-w-0 font-semibold text-navy break-words text-right">' + esc(p.username || '') + '</span></div>' +
+            '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">Email</span><span class="min-w-0 break-all text-right">' + esc(p.email || '') + '</span></div>' +
+            '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">Phone</span><span class="min-w-0 break-words text-right">' + esc(p.phone_no || '') + '</span></div>' +
+            '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">Project</span><span class="min-w-0 font-semibold text-navy break-words text-right">' + esc(p.project_name) + '</span></div>' +
             '<div><span class="text-navy-900/50">Details</span><p class="break-words">' + (p.details ? esc(p.details) : '—') + '</p></div>' +
-            '<div class="flex justify-between gap-2"><span class="text-navy-900/50">Budget</span><span>' + fmtBudget(p.budget) + '</span></div>' +
+            '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">Budget</span><span class="min-w-0 break-words text-right">' + fmtBudget(p.budget) + '</span></div>' +
           '</a>'
         ).join('');
         body.innerHTML =
@@ -140,12 +140,14 @@
         ? mine.map((c) => {
             const replied = (c.responses || []).length > 0;
             const issueList = (c.issues || []).map((i) => '<li class="text-sm text-navy-900/80 leading-relaxed break-words">• ' + esc(i.description) + '</li>').join('');
+            const replyList = (c.responses || []).map((r) => '<div class="bg-navy-50 border border-navy-100 rounded p-3 break-words"><p class="text-sm text-navy-900/80 leading-relaxed break-words">' + esc(r.response) + '</p><p class="text-[11px] text-navy-900/50 mt-1">' + esc(r.admin || 'Admin') + ' • ' + esc(fmtDate(r.created_at)) + '</p></div>').join('');
             return '<div class="border border-navy-100 rounded px-3.5 py-2.5">' +
               '<div class="flex items-center justify-between gap-2 mb-1">' +
                 '<span class="text-sm text-navy-900/80">' + esc(fmtDate(c.created_at)) + ' • ' + c.issues.length + ' issue' + (c.issues.length === 1 ? '' : 's') + '</span>' +
                 '<span class="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (replied ? 'text-green-700 bg-green-50' : 'text-gold-600 bg-navy-50') + '">' + (replied ? 'Replied' : 'Pending') + '</span>' +
               '</div>' +
-              '<ul class="space-y-1">' + issueList + '</ul>' +
+              '<ul class="space-y-1' + (replied ? ' mb-2' : '') + '">' + issueList + '</ul>' +
+              (replied ? '<div class="space-y-2">' + replyList + '</div>' : '') +
             '</div>';
           }).join('')
         : '<p class="text-sm text-navy-900/50">No complaints for this project yet.</p>';
@@ -154,7 +156,7 @@
       const billMoney = (v) => (v !== null && v !== '' && v !== undefined) ? '₹' + esc(v) : '<span class="text-navy-900/40">—</span>';
       const brow = (label, val) => {
         const cls = label === 'Paid' ? 'text-green-700 font-bold' : (label === 'Due Amount' ? 'text-red-600 font-bold' : 'text-navy-900/80 font-medium');
-        return '<div class="flex justify-between gap-3 py-1.5 border-b border-navy-100/70 last:border-0"><span class="text-navy-900/50 text-[13px]">' + label + '</span><span class="' + cls + ' text-[13px] break-words text-right">' + val + '</span></div>';
+        return '<div class="flex justify-between gap-3 py-1.5 border-b border-navy-100/70 last:border-0"><span class="shrink-0 text-navy-900/50 text-[13px]">' + label + '</span><span class="' + cls + ' min-w-0 text-[13px] break-all text-right">' + val + '</span></div>';
       };
       const payBudget = (det && det.budget !== null && det.budget !== '' && det.budget !== undefined) ? '₹' + esc(det.budget) : ((proj && proj.budget !== null && proj.budget !== '' && proj.budget !== undefined) ? '₹' + esc(proj.budget) : '<span class="text-navy-900/40">—</span>');
       const paymentHtml =
@@ -172,13 +174,14 @@
         brow('Last Pay Amount', det ? billMoney(det.last_pay_amount) : '—') +
         brow('Paid', det ? billMoney(det.paid_amount) : '—') +
         brow('Due Amount', det ? billMoney(det.due_amount) : '—');
-      const tabBtn = (key, label, on) => '<button type="button" data-tab="' + key + '" class="pay-tab flex-1 text-sm font-semibold px-4 py-2.5 rounded border transition ' + (on ? 'bg-navy text-white border-navy' : 'bg-white text-navy border-navy-100 hover:bg-navy-50') + '">' + label + '</button>';
+      const tabBtn = (key, label, on) => '<button type="button" data-tab="' + key + '" class="pay-tab flex-1 text-sm font-semibold px-4 py-2.5 rounded border ' + (on ? 'bg-navy text-white border-navy' : 'bg-white text-navy border-navy-100') + '">' + label + '</button>';
       const tabsHtml =
         '<div>' +
-          '<div class="flex gap-2.5 mb-3">' + tabBtn('payment', 'Payment', true) + tabBtn('bill', 'Bill', false) + '</div>' +
+          '<div class="flex gap-2.5 mb-3">' + tabBtn('payment', 'Payment', true) + tabBtn('bill', 'Bill', false) + tabBtn('project', 'Project', false) + '</div>' +
           '<div class="pay-panel border border-navy-100 rounded-xl px-4 py-2 bg-white" data-panel="payment">' + paymentHtml + '</div>' +
           '<div class="pay-panel hidden border border-navy-100 rounded-xl px-4 py-2 bg-white" data-panel="bill">' + billHtml +
             '<button type="button" class="print-bill mt-3 mb-2 w-full bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-printer"></i>Print Bill</button></div>' +
+          '<div class="pay-panel hidden border border-navy-100 rounded-xl px-4 py-2 bg-white" data-panel="project"></div>' +
         '</div>';
       const infoRows =
         '<div class="grid sm:grid-cols-[150px_1fr] gap-x-4 gap-y-1 py-3">' +

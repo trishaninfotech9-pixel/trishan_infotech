@@ -259,6 +259,9 @@ body.admin-nav-open .admin-overlay { opacity: 1; pointer-events: auto; }
 .admin-notif-item .t { font-size: 13px; font-weight: 600; color: #0C4A6E; }
 .admin-notif-item .s { font-size: 12px; color: #5F7E97; }
 .admin-notif-empty { padding: 18px 16px; font-size: 13px; color: #5F7E97; text-align: center; }
+@media (max-width: 640px) {
+  .admin-notif { position: fixed; top: 64px; left: 16px; right: 16px; width: auto; }
+}
 .notif-flash { animation: notifFlash 2.4s ease; border-radius: 12px; }
 @keyframes notifFlash {
   0%, 60% { box-shadow: 0 0 0 3px rgba(2,132,199,.55); }
