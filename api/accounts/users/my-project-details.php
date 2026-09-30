@@ -1,17 +1,17 @@
 <?php
-require dirname(__DIR__, 2) . '/db.php';
+require dirname(__DIR__, 2) . '/class/Database.class.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-  json(['ok' => false, 'error' => 'Method not allowed.'], 405);
+  Database::json(['ok' => false, 'error' => 'Method not allowed.'], 405);
 }
 
 $user_id = (int)($_GET['user_id'] ?? 0);
 $project = trim((string)($_GET['project'] ?? ''));
-if ($user_id <= 0) json(['ok' => false, 'error' => 'Login required.'], 401);
-if ($project === '') json(['ok' => false, 'error' => 'Project required.'], 400);
+if ($user_id <= 0) Database::json(['ok' => false, 'error' => 'Login required.'], 401);
+if ($project === '') Database::json(['ok' => false, 'error' => 'Project required.'], 400);
 
 try {
-  $pdo = db();
+  $pdo = Database::conn();
   $stmt = $pdo->prepare('SELECT id, username, email, phone_no, project_name, project_details, budget, domain_name, domain_booking_date, domain_amount, server_name, server_renewal_date, server_amount, amc_date, amc_amount, mmc_date, mmc_amount, paid_amount, due_amount, next_payment_date, last_pay_amount, last_pay_date, created_at FROM project_details WHERE user_id = ? AND LOWER(project_name) = LOWER(?) LIMIT 1');
   $stmt->execute([$user_id, $project]);
   $row = $stmt->fetch();
@@ -21,7 +21,7 @@ try {
     $pr = $st->fetch();
     $row['status'] = ($pr && (int)$pr['is_complete'] === 1) ? 'complete' : (($pr && (int)$pr['is_under_process'] === 1) ? 'process' : 'pending');
   }
-  json(['ok' => true, 'details' => $row ?: null]);
+  Database::json(['ok' => true, 'details' => $row ?: null]);
 } catch (PDOException $e) {
-  json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
+  Database::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
 }

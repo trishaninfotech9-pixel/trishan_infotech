@@ -1,25 +1,25 @@
 <?php
-require dirname(__DIR__, 2) . '/db.php';
+require dirname(__DIR__, 2) . '/class/Database.class.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-  json(['ok' => false, 'error' => 'Method not allowed.'], 405);
+  Database::json(['ok' => false, 'error' => 'Method not allowed.'], 405);
 }
 
 $admin_id = (int)($_GET['admin_id'] ?? 0);
 $user_id = (int)($_GET['user_id'] ?? 0);
-if ($admin_id <= 0) json(['ok' => false, 'error' => 'Admin login required.'], 401);
-if ($user_id <= 0) json(['ok' => false, 'error' => 'Select a user first.'], 400);
+if ($admin_id <= 0) Database::json(['ok' => false, 'error' => 'Admin login required.'], 401);
+if ($user_id <= 0) Database::json(['ok' => false, 'error' => 'Select a user first.'], 400);
 
 try {
-  $pdo = db();
+  $pdo = Database::conn();
   $stmt = $pdo->prepare('SELECT id FROM admins WHERE id = ? LIMIT 1');
   $stmt->execute([$admin_id]);
-  if (!$stmt->fetch()) json(['ok' => false, 'error' => 'Admin not found.'], 401);
+  if (!$stmt->fetch()) Database::json(['ok' => false, 'error' => 'Admin not found.'], 401);
 
   $stmt = $pdo->prepare('SELECT id, first_name, middle_name, last_name FROM users WHERE id = ? LIMIT 1');
   $stmt->execute([$user_id]);
   $account = $stmt->fetch();
-  if (!$account) json(['ok' => false, 'error' => 'User not found.'], 404);
+  if (!$account) Database::json(['ok' => false, 'error' => 'User not found.'], 404);
   $uname = trim(implode(' ', array_filter([$account['first_name'], $account['middle_name'], $account['last_name']])));
 
   $stmt = $pdo->prepare('SELECT id, project_name, details, is_complete, is_under_process, created_at FROM projects WHERE user_id = ? ORDER BY id DESC');
@@ -101,7 +101,7 @@ try {
     $p['page'] = $linkMap[$key]['page'] ?? '';
   }
   unset($p);
-  json(['ok' => true, 'projects' => $assigned]);
+  Database::json(['ok' => true, 'projects' => $assigned]);
 } catch (PDOException $e) {
-  json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
+  Database::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
 }

@@ -1,18 +1,18 @@
 <?php
-require dirname(__DIR__, 2) . '/db.php';
+require dirname(__DIR__, 2) . '/class/Database.class.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-  json(['ok' => false, 'error' => 'Method not allowed.'], 405);
+  Database::json(['ok' => false, 'error' => 'Method not allowed.'], 405);
 }
 
 $admin_id = (int)($_GET['admin_id'] ?? 0);
-if ($admin_id <= 0) json(['ok' => false, 'error' => 'Admin login required.'], 401);
+if ($admin_id <= 0) Database::json(['ok' => false, 'error' => 'Admin login required.'], 401);
 
 try {
-  $pdo = db();
+  $pdo = Database::conn();
   $stmt = $pdo->prepare('SELECT id FROM admins WHERE id = ? LIMIT 1');
   $stmt->execute([$admin_id]);
-  if (!$stmt->fetch()) json(['ok' => false, 'error' => 'Admin not found.'], 401);
+  if (!$stmt->fetch()) Database::json(['ok' => false, 'error' => 'Admin not found.'], 401);
 
   $filter = strtolower(trim($_GET['filter'] ?? 'all'));
   // Solved state is driven ONLY by the admin checkbox (complaints.is_solved).
@@ -39,7 +39,7 @@ try {
     $rStmt->execute([$c['id']]);
     $c['responses'] = $rStmt->fetchAll();
   }
-  json(['ok' => true, 'complaints' => $complaints]);
+  Database::json(['ok' => true, 'complaints' => $complaints]);
 } catch (PDOException $e) {
-  json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
+  Database::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
 }

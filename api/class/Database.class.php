@@ -1,17 +1,33 @@
 <?php
-// Shared MySQL connection (PDO). Local DB: root / 123456 / trishan_db
-function db() {
-  static $pdo = null;
-  if ($pdo === null) {
-    $pdo = new PDO(
-      'mysql:host=127.0.0.1;port=3306;dbname=trishan_db;charset=utf8mb4',
-      'root',
-      '',
-      [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-      ]
-    );
+// Central MySQL (PDO) connection, schema migrations and JSON responder.
+// Local DB: root / '' / trishan_db
+final class Database {
+  private static ?PDO $pdo = null;
+
+  public static function conn(): PDO {
+    if (self::$pdo === null) {
+      self::$pdo = new PDO(
+        'mysql:host=127.0.0.1;port=3306;dbname=trishan_db;charset=utf8mb4',
+        'root',
+        '',
+        [
+          PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+          PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        ]
+      );
+      self::migrate(self::$pdo);
+    }
+    return self::$pdo;
+  }
+
+  public static function json($data, int $code = 200): void {
+    http_response_code($code);
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+  }
+
+  private static function migrate(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
       first_name VARCHAR(50) NOT NULL,
@@ -233,12 +249,4 @@ function db() {
       SELECT p.user_id, p.project_name, 'process', COALESCE(p.status_updated_at, p.created_at) FROM projects p
       WHERE p.is_under_process = 1 AND NOT EXISTS (SELECT 1 FROM project_status_log l WHERE l.user_id = p.user_id AND l.project_name = p.project_name AND l.event = 'process')");
   }
-  return $pdo;
-}
-
-function json($data, $code = 200) {
-  http_response_code($code);
-  header('Content-Type: application/json');
-  echo json_encode($data);
-  exit;
 }
