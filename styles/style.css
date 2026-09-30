@@ -45,7 +45,7 @@ html {
 
 /* Auto-hide navbar on scroll down */
 #siteNav { transition: box-shadow .35s ease, background-color .35s ease, transform .35s ease; }
-#siteNav.nav-hide { transform: translateY(-100%); }
+#siteNav.nav-hide { transform: none; }
 
 /* Tactile press on buttons */
 button:active { transform: scale(.97); }

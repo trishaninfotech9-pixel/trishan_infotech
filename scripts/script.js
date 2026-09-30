@@ -282,9 +282,8 @@ function initMotion() {
     });
   }
 
-  // Navbar shadow + auto-hide + scroll progress (nav is injected, so look it up per scroll)
+  // Navbar shadow + scroll progress (nav is injected, so look it up per scroll)
   const bar = document.querySelector('.scroll-progress');
-  let lastY = 0;
   addEventListener('scroll', () => {
     const h = document.documentElement;
     const max = h.scrollHeight - h.clientHeight;
@@ -293,14 +292,8 @@ function initMotion() {
     const y = h.scrollTop;
     if (nav) {
       nav.classList.toggle('nav-scrolled', y > 24);
-      if (!document.body.classList.contains('menu-open')) {
-        if (y > 320 && y > lastY + 4) nav.classList.add('nav-hide');
-        else if (y < lastY - 4 || y <= 320) nav.classList.remove('nav-hide');
-      } else {
-        nav.classList.remove('nav-hide');
-      }
+      nav.classList.remove('nav-hide');
     }
-    lastY = y;
   }, { passive: true });
 }
 
