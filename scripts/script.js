@@ -206,15 +206,21 @@ function updateAuthNav(base, current, inPages, loggedIn, adminOnly) {
 // Red dot + white count on the Response nav link; hidden when zero.
 async function updateResponseBadge(base, userId) {
   try {
-    const [rc, rp] = await Promise.all([
+    const [rc, rp, re] = await Promise.all([
       fetch(base + 'api/accounts/users/my-complaints.php?user_id=' + encodeURIComponent(userId)),
       fetch(base + 'api/accounts/users/my-projects.php?user_id=' + encodeURIComponent(userId)),
+      fetch(base + 'api/accounts/users/my-enquiries.php?user_id=' + encodeURIComponent(userId)),
     ]);
     const body = await rc.json().catch(() => null);
     const pbody = await rp.json().catch(() => null);
+    const ebody = await re.json().catch(() => null);
     let n = 0;
     if (body && body.ok) {
       body.complaints.forEach((c) => (c.responses || []).forEach((r) => { if (!+r.seen) n++; }));
+    }
+    // Unseen admin replies on project enquiries.
+    if (ebody && ebody.ok) {
+      (ebody.enquiries || []).forEach((q) => (q.responses || []).forEach((r) => { if (!+r.seen) n++; }));
     }
     // Unseen project status updates (Work Under Process / Completed).
     if (pbody && pbody.ok) {
