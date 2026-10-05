@@ -46,7 +46,7 @@
           (b.events || []).forEach((v) => items.push({ t: v.created_at || '', kind: v.event }));
           items.sort((a, c2) => String(a.t).localeCompare(String(c2.t)));
           if (!items.length) { menu.innerHTML = '<p class="px-4 py-3 text-sm text-navy-900/50">No log entries yet.</p>'; return; }
-          const row = (icon, text, t) => '<div class="flex items-center gap-2.5 px-4 py-2.5 border-b border-navy-100/70 last:border-0"><i class="' + icon + ' text-navy shrink-0"></i><span class="flex-1 text-[13px] text-navy-900/80">' + text + '</span><span class="shrink-0 text-[12px] text-navy-900/50 whitespace-nowrap">' + esc(fmtDateTime(t)) + '</span></div>';
+          const row = (icon, text, t) => '<div class="flex items-center gap-2.5 px-4 py-2.5 border-b border-navy-100/70 last:border-0"><i class="' + icon + ' text-navy shrink-0"></i><span class="flex-1 min-w-0 text-[13px] text-navy-900/80 break-words">' + text + '</span><span class="shrink-0 text-[12px] text-navy-900/50 whitespace-nowrap">' + esc(fmtDateTime(t)) + '</span></div>';
           menu.innerHTML = items.map((it) =>
             it.kind === 'complaint' ? row('bi bi-flag', 'Complaint sent', it.t) :
             it.kind === 'process' ? row('bi bi-hourglass-split', 'Work under process', it.t) :

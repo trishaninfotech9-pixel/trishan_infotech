@@ -261,7 +261,7 @@ body.admin-nav-open .admin-overlay { opacity: 1; pointer-events: auto; }
   border-radius: 9999px; padding: 9px 16px; color: #5F7E97; min-width: 0;
 }
 @media (min-width: 640px) { .admin-search { display: inline-flex; } }
-.admin-search input { border: 0; background: transparent; outline: none; font-size: 13px; width: 220px; color: #0C4A6E; }
+.admin-search input { border: 0; background: transparent; outline: none; font-size: 13px; width: min(220px, 32vw); min-width: 0; color: #0C4A6E; }
 .admin-top-right { margin-left: auto; display: flex; align-items: center; gap: 12px; position: relative; }
 .admin-bell-wrap { position: relative; }
 .admin-bell {
