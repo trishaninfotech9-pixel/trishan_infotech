@@ -120,9 +120,10 @@
           '<div class="proj-body hidden pt-4">' +
             detHtml +
             (extra ? '<div class="my-2">' + extra + '</div>' : '') +
-            '<div class="mt-4 flex gap-2.5">' +
-              '<a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 border border-navy-100 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-info-circle"></i>Details</a>' +
-              '<a href="complaint.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
+            '<div class="mt-4 flex gap-2.5 flex-wrap">' +
+              '<a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 min-w-[90px] border border-navy-100 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-info-circle"></i>Details</a>' +
+              '<a href="complaint.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 min-w-[90px] bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
+              '<a href="enquiry.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 min-w-[90px] border border-navy-700 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-envelope-paper"></i>Enquiry</a>' +
             '</div>' +
             '<div class="relative mt-2.5">' +
               '<button type="button" class="logmenu-toggle w-full border border-navy-100 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2" data-project="' + esc(p.project_name) + '"><i class="bi bi-list-ul"></i>Log Menu<i class="bi bi-chevron-down text-xs"></i></button>' +

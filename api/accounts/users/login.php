@@ -1,27 +1,15 @@
 <?php
-require dirname(__DIR__, 2) . '/class/Database.class.php';
+require dirname(__DIR__, 2) . '/class/autoloader.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  Database::json(['ok' => false, 'error' => 'Method not allowed.'], 405);
-}
-
+dbcon::method('POST');
 $in = json_decode(file_get_contents('php://input'), true) ?: [];
 $identifier = trim($in['identifier'] ?? $in['phone'] ?? $in['email'] ?? '');
 $pass  = (string)($in['password'] ?? '');
-
-if ($identifier === '' || $pass === '') {
-  Database::json(['ok' => false, 'error' => 'Phone/email and password required.'], 400);
-}
+if ($identifier === '' || $pass === '') dbcon::json(['ok' => false, 'error' => 'Phone/email and password required.'], 400);
 
 try {
-  $stmt = Database::conn()->prepare('SELECT id, first_name, last_name, phone, email, password_hash FROM users WHERE phone = ? OR email = ? LIMIT 1');
-  $stmt->execute([$identifier, strtolower($identifier)]);
-  $user = $stmt->fetch();
-  if (!$user || !password_verify($pass, $user['password_hash'])) {
-    Database::json(['ok' => false, 'error' => 'Invalid login or password.'], 401);
-  }
-  unset($user['password_hash']);
-  Database::json(['ok' => true, 'message' => 'Login successful.', 'user' => $user]);
+  $user = (new auth())->userLogin($identifier, $pass);
+  dbcon::json(['ok' => true, 'message' => 'Login successful.', 'user' => $user, 'csrf' => dbcon::csrfToken()]);
 } catch (PDOException $e) {
-  Database::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
+  dbcon::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
 }

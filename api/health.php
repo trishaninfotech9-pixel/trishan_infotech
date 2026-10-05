@@ -1,9 +1,9 @@
 <?php
-require __DIR__ . '/class/Database.class.php';
+require __DIR__ . '/class/autoloader.php';
 
 try {
-  Database::conn()->query('SELECT 1');
-  Database::json(['ok' => true, 'db' => 'connected']);
+  dbcon::conn()->query('SELECT 1');
+  dbcon::json(['ok' => true, 'db' => 'connected']);
 } catch (PDOException $e) {
-  Database::json(['ok' => false, 'error' => 'DB connection failed: ' . $e->getMessage()], 500);
+  dbcon::json(['ok' => false, 'error' => 'DB connection failed: ' . $e->getMessage()], 500);
 }

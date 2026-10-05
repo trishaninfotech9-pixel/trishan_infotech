@@ -1,40 +1,10 @@
 <?php
-require dirname(__DIR__, 2) . '/class/Database.class.php';
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  Database::json(['ok' => false, 'error' => 'Method not allowed.'], 405);
-}
-
-$in = json_decode(file_get_contents('php://input'), true) ?: [];
-$first  = trim($in['first_name'] ?? '');
-$middle = trim($in['middle_name'] ?? '');
-$last   = trim($in['last_name'] ?? '');
-$phone  = trim($in['phone'] ?? '');
-$email  = strtolower(trim($in['email'] ?? ''));
-$pass   = (string)($in['password'] ?? '');
-$confirm = (string)($in['confirm_password'] ?? '');
-
-if ($first === '' || $last === '' || $phone === '' || $email === '' || $pass === '' || $confirm === '') {
-  Database::json(['ok' => false, 'error' => 'All required fields must be filled.'], 400);
-}
-if ($pass !== $confirm) {
-  Database::json(['ok' => false, 'error' => 'Passwords do not match.'], 400);
-}
-if (strlen($pass) < 4) {
-  Database::json(['ok' => false, 'error' => 'Password must be at least 4 characters.'], 400);
-}
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-  Database::json(['ok' => false, 'error' => 'Enter a valid email address.'], 400);
-}
-
+require dirname(__DIR__, 2) . '/class/autoloader.php';
+dbcon::method('POST');
 try {
-  $hash = password_hash($pass, PASSWORD_BCRYPT);
-  $stmt = Database::conn()->prepare('INSERT INTO users (first_name, middle_name, last_name, phone, email, password_hash) VALUES (?, ?, ?, ?, ?, ?)');
-  $stmt->execute([$first, $middle !== '' ? $middle : null, $last, $phone, $email, $hash]);
-  Database::json(['ok' => true, 'message' => 'Account created. Please login.']);
+  (new auth())->registerValidated(json_decode(file_get_contents('php://input'), true) ?: []);
+  dbcon::json(['ok' => true, 'message' => 'Account created. Please login.']);
 } catch (PDOException $e) {
-  if ($e->getCode() === '23000') {
-    Database::json(['ok' => false, 'error' => 'Phone number or email already registered.'], 409);
-  }
-  Database::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
+  if ($e->getCode() === '23000') dbcon::json(['ok' => false, 'error' => 'Phone number or email already registered.'], 409);
+  dbcon::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
 }

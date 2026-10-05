@@ -1,39 +1,18 @@
 <?php
-require dirname(__DIR__, 2) . '/class/Database.class.php';
+require dirname(__DIR__, 2) . '/class/autoloader.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  Database::json(['ok' => false, 'error' => 'Method not allowed.'], 405);
-}
-
-$in = json_decode(file_get_contents('php://input'), true);
-if (!is_array($in)) $in = $_POST;
-
-$admin_id = (int)($in['admin_id'] ?? 0);
+dbcon::method('POST');
+$in = dbcon::input();
+dbcon::requireAdmin();
+dbcon::requireCsrf();
 $complaint_id = (int)($in['complaint_id'] ?? 0);
-
-if ($admin_id <= 0) Database::json(['ok' => false, 'error' => 'Admin login required.'], 401);
-if ($complaint_id <= 0) Database::json(['ok' => false, 'error' => 'Complaint not found.'], 404);
+if ($complaint_id <= 0) dbcon::json(['ok' => false, 'error' => 'Complaint not found.'], 404);
 
 try {
-  $pdo = Database::conn();
-  $stmt = $pdo->prepare('SELECT id FROM admins WHERE id = ? LIMIT 1');
-  $stmt->execute([$admin_id]);
-  if (!$stmt->fetch()) Database::json(['ok' => false, 'error' => 'Admin not found.'], 401);
-
-  $stmt = $pdo->prepare('SELECT id FROM complaints WHERE id = ? LIMIT 1');
-  $stmt->execute([$complaint_id]);
-  if (!$stmt->fetch()) Database::json(['ok' => false, 'error' => 'Complaint not found.'], 404);
-
-  // Issues + responses go away automatically via ON DELETE CASCADE.
-  // Delete explicitly first for DBs where FK checks are off, then the complaint.
-  $stmt = $pdo->prepare('DELETE FROM complaint_responses WHERE complaint_id = ?');
-  $stmt->execute([$complaint_id]);
-  $stmt = $pdo->prepare('DELETE FROM complaint_issues WHERE complaint_id = ?');
-  $stmt->execute([$complaint_id]);
-  $stmt = $pdo->prepare('DELETE FROM complaints WHERE id = ?');
-  $stmt->execute([$complaint_id]);
-
-  Database::json(['ok' => true, 'message' => 'Complaint deleted everywhere.']);
+  $c = new complaint();
+  $c->mustExist($complaint_id);
+  $c->deleteComplaint($complaint_id);
+  dbcon::json(['ok' => true, 'message' => 'Complaint deleted everywhere.']);
 } catch (PDOException $e) {
-  Database::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
+  dbcon::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
 }

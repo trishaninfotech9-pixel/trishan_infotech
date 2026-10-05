@@ -149,7 +149,8 @@
       try {
         const res = await fetch('../../../api/accounts/admin/ignore-complaint.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          headers: (typeof trishanHeaders === 'function' ? trishanHeaders() : { 'Content-Type': 'application/json' }),
           body: JSON.stringify({ admin_id: admin.id, complaint_id: row ? row.dataset.complaint : btn.dataset.id, ignored: 1 }),
         });
         const body = await res.json().catch(() => null);
@@ -173,7 +174,8 @@
       try {
         const res = await fetch('../../../api/accounts/admin/delete-complaint.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          headers: (typeof trishanHeaders === 'function' ? trishanHeaders() : { 'Content-Type': 'application/json' }),
           body: JSON.stringify({ admin_id: admin.id, complaint_id: row ? row.dataset.complaint : btn.dataset.id }),
         });
         const body = await res.json().catch(() => null);
@@ -211,7 +213,8 @@
       try {
         const res = await fetch('../../../api/accounts/admin/reply.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          headers: (typeof trishanHeaders === 'function' ? trishanHeaders() : { 'Content-Type': 'application/json' }),
           body: JSON.stringify({ admin_id: admin.id, complaint_id: row.dataset.complaint, response: text.value.trim() }),
         });
         const body = await res.json().catch(() => null);
@@ -247,7 +250,8 @@
       try {
         const res = await fetch('../../../api/accounts/admin/mark-solved.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          headers: (typeof trishanHeaders === 'function' ? trishanHeaders() : { 'Content-Type': 'application/json' }),
           body: JSON.stringify({ admin_id: admin.id, complaint_id: complaintId, solved: box.checked ? 1 : 0 }),
         });
         const body = await res.json().catch(() => null);

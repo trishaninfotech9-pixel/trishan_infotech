@@ -16,9 +16,9 @@
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link rel="stylesheet" href="../../../styles/style.css">
-<script src="../../../scripts/script.js" defer></script>
+<script src="../../../scripts/script.js?v=5" defer></script>
 <script src="../../../scripts/accounts/admin/dashboard.js" defer></script>
-<script src="../../../scripts/accounts/admin/shell.js" defer></script>
+<script src="../../../scripts/accounts/admin/shell.js?v=3" defer></script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
 <!-- BODY START: all visible page content lives inside the body tag -->
@@ -39,7 +39,7 @@
     <p class="hero-lead text-sm text-navy-900/60 mb-6">Hi <span id="dashAdminName">Admin</span>, here is what is happening across your users today.</p>
 
     <!-- STAT CARDS -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       <div class="bg-white border border-navy-100 rounded-2xl p-5 shadow-sm">
         <div class="flex items-start justify-between mb-4"><span class="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center"><i class="bi bi-people text-navy"></i></span><span class="text-[11px] font-semibold text-navy-900/40">live</span></div>
         <p class="text-3xl font-extrabold text-navy-900" data-stat="users">–</p>
@@ -59,6 +59,11 @@
         <div class="flex items-start justify-between mb-4"><span class="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center"><i class="bi bi-chat-left-text text-navy"></i></span><span class="text-[11px] font-semibold text-navy-900/40">live</span></div>
         <p class="text-3xl font-extrabold text-navy-900" data-stat="responses">–</p>
         <p class="text-[13px] text-navy-900/60 mt-1">Total Responses</p>
+      </div>
+      <div class="bg-white border border-navy-100 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-start justify-between mb-4"><span class="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center"><i class="bi bi-envelope-paper text-navy"></i></span><span class="text-[11px] font-semibold text-navy-900/40">live</span></div>
+        <p class="text-3xl font-extrabold text-navy-900" data-stat="enquiries">–</p>
+        <p class="text-[13px] text-navy-900/60 mt-1">Total Enquiries</p>
       </div>
     </div>
   </div>

@@ -83,10 +83,13 @@
 
     // Logout (shared handler shape with the public header).
     holder.querySelectorAll('[data-logout]').forEach((el) => {
-      el.addEventListener('click', (e) => {
+      el.addEventListener('click', async (e) => {
         e.preventDefault();
-        try { localStorage.removeItem('trishan_user'); localStorage.removeItem('trishan_admin'); } catch (err) {}
         document.body.classList.remove('admin-nav-open');
+        if (typeof trishanLogout === 'function') await trishanLogout(BASE);
+        else {
+          try { localStorage.removeItem('trishan_user'); localStorage.removeItem('trishan_admin'); } catch (err) {}
+        }
         location.href = BASE + 'index.html';
       });
     });
@@ -99,42 +102,71 @@
       }
     } catch (e) {}
 
-    // Notifications: pending-complaint count + dropdown that deep-links.
+    // Notifications: unseen complaints + unseen enquiries + new signups, deep-linked.
     const bellBtn = document.getElementById('adminBellBtn');
     const bellCount = document.getElementById('adminBellCount');
     const notifDrop = document.getElementById('adminNotifDrop');
     async function loadNotifs() {
       if (!admin || !admin.id || !bellCount || !notifDrop) return;
       try {
-        const res = await fetch(BASE + 'api/accounts/admin/all-complaints.php?admin_id=' + encodeURIComponent(admin.id) + '&filter=unseen');
-        const body = await res.json().catch(() => null);
+        const [rc, re, ru] = await Promise.all([
+          fetch(BASE + 'api/accounts/admin/all-complaints.php?admin_id=' + encodeURIComponent(admin.id) + '&filter=unseen'),
+          fetch(BASE + 'api/accounts/admin/enquiries.php?admin_id=' + encodeURIComponent(admin.id) + '&filter=unseen'),
+          fetch(BASE + 'api/accounts/admin/unseen-users.php?admin_id=' + encodeURIComponent(admin.id)),
+        ]);
+        const body = await rc.json().catch(() => null);
+        const ebody = await re.json().catch(() => null);
+        const ubody = await ru.json().catch(() => null);
         const items = (body && body.ok && body.complaints) || [];
-        bellCount.textContent = items.length > 99 ? '99+' : String(items.length);
-        bellCount.classList.toggle('hidden', items.length === 0);
+        const enqs = (ebody && ebody.ok && ebody.enquiries) || [];
+        const signups = (ubody && ubody.ok && ubody.users) || [];
+        const total = items.length + enqs.length + signups.length;
+        bellCount.textContent = total > 99 ? '99+' : String(total);
+        bellCount.classList.toggle('hidden', total === 0);
         const esc2 = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-        notifDrop.innerHTML = '<div class="admin-notif-head">Notifications (' + items.length + ')</div>' +
-          (items.length
-            ? items.slice(0, 20).map((c) => {
-                const nm = esc2(c.username || [c.first_name, c.middle_name, c.last_name].filter(Boolean).join(' '));
-                return '<a class="admin-notif-item" data-seen-id="' + c.id + '" href="' + BASE + 'pages/accounts/admin/all_pending_complaint.html?focus=' + c.id + '">' +
+        const fullName = (o) => [o.first_name, o.middle_name, o.last_name].filter(Boolean).join(' ');
+        notifDrop.innerHTML = '<div class="admin-notif-head">Notifications (' + total + ')</div>' +
+          (total
+            ? signups.slice(0, 20).map((u) =>
+                '<a class="admin-notif-item" data-kind="user" data-seen-id="' + u.id + '" href="' + BASE + 'pages/accounts/admin/users.html">' +
+                  '<span><span class="t">New user: ' + esc2(fullName(u)) + '</span><br><span class="s">' + esc2(u.email || u.phone || '') + '</span></span>' +
+                  '<i class="bi bi-chevron-right" style="color:#5F7E97"></i></a>'
+              ).join('') +
+              items.slice(0, 20).map((c) => {
+                const nm = esc2(c.username || fullName(c));
+                return '<a class="admin-notif-item" data-kind="complaint" data-seen-id="' + c.id + '" href="' + BASE + 'pages/accounts/admin/all_pending_complaint.html?focus=' + c.id + '">' +
                   '<span><span class="t">' + esc2(c.project_name) + '</span><br><span class="s">' + nm + '</span></span>' +
+                  '<i class="bi bi-chevron-right" style="color:#5F7E97"></i></a>';
+              }).join('') +
+              enqs.slice(0, 20).map((q) => {
+                const nm = esc2(q.username || q.name);
+                return '<a class="admin-notif-item" data-kind="enquiry" data-seen-id="' + q.id + '" href="' + BASE + 'pages/accounts/admin/all_enquiry.html">' +
+                  '<span><span class="t">Enquiry: ' + esc2(q.project_name || 'Website') + '</span><br><span class="s">' + nm + '</span></span>' +
                   '<i class="bi bi-chevron-right" style="color:#5F7E97"></i></a>';
               }).join('')
             : '<div class="admin-notif-empty">No new notifications.</div>');
       } catch (e) {}
     }
-    // Clicking a notification marks it seen (count drops), then opens it.
+    // Clicking a notification marks it seen (count drops), then opens its area:
+    // new user → Users, complaint → Pending Complaint, enquiry → Enquiry.
     if (notifDrop) {
       notifDrop.addEventListener('click', async (e) => {
         const a = e.target.closest('.admin-notif-item');
         if (!a || !admin || !admin.id) return;
         e.preventDefault();
         const url = a.href;
+        const kind = a.dataset.kind || 'complaint';
+        const seenUrl = kind === 'user' ? 'api/accounts/admin/mark-user-seen.php'
+          : (kind === 'enquiry' ? 'api/accounts/admin/mark-enquiry-seen.php' : 'api/accounts/admin/mark-admin-seen.php');
+        const seenBody = kind === 'user' ? { admin_id: admin.id, user_id: a.dataset.seenId }
+          : (kind === 'enquiry' ? { admin_id: admin.id, enquiry_id: a.dataset.seenId }
+          : { admin_id: admin.id, complaint_id: a.dataset.seenId });
         try {
-          await fetch(BASE + 'api/accounts/admin/mark-admin-seen.php', {
+          await fetch(BASE + seenUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ admin_id: admin.id, complaint_id: a.dataset.seenId }),
+            credentials: 'same-origin',
+            headers: (typeof trishanHeaders === 'function' ? trishanHeaders() : { 'Content-Type': 'application/json' }),
+            body: JSON.stringify(seenBody),
           });
         } catch (err) {}
         location.href = url;

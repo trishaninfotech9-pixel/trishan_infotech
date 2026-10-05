@@ -118,7 +118,8 @@
       try {
         const res = await fetch(isProc ? '../../../api/accounts/admin/mark-project-process.php' : '../../../api/accounts/admin/mark-project-complete.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          headers: (typeof trishanHeaders === 'function' ? trishanHeaders() : { 'Content-Type': 'application/json' }),
           body: JSON.stringify(isProc
             ? { admin_id: admin.id, user_id: uid, project_name: box.dataset.name, process: want }
             : { admin_id: admin.id, user_id: uid, project_name: box.dataset.name, complete: want }),

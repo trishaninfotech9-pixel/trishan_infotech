@@ -125,7 +125,8 @@
       try {
         const res = await fetch('../../../api/accounts/users/complaint.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          headers: (typeof trishanHeaders === 'function' ? trishanHeaders() : { 'Content-Type': 'application/json' }),
           body: JSON.stringify({
             user_id: user.id,
             project_name: document.getElementById('cProject').value.trim(),

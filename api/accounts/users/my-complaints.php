@@ -1,32 +1,11 @@
 <?php
-require dirname(__DIR__, 2) . '/class/Database.class.php';
+require dirname(__DIR__, 2) . '/class/autoloader.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-  Database::json(['ok' => false, 'error' => 'Method not allowed.'], 405);
-}
-
-$user_id = (int)($_GET['user_id'] ?? 0);
-if ($user_id <= 0) Database::json(['ok' => false, 'error' => 'Login required.'], 401);
+dbcon::method('GET');
+$user_id = dbcon::requireUser();
 
 try {
-  $pdo = Database::conn();
-  $stmt = $pdo->prepare('SELECT id FROM users WHERE id = ? LIMIT 1');
-  $stmt->execute([$user_id]);
-  if (!$stmt->fetch()) Database::json(['ok' => false, 'error' => 'User not found.'], 401);
-
-  $stmt = $pdo->prepare('SELECT id, project_name, is_solved, created_at FROM complaints WHERE user_id = ? ORDER BY id DESC');
-  $stmt->execute([$user_id]);
-  $complaints = $stmt->fetchAll();
-
-  $iStmt = $pdo->prepare('SELECT description, created_at FROM complaint_issues WHERE complaint_id = ? ORDER BY id ASC');
-  $rStmt = $pdo->prepare('SELECT r.response, r.created_at, r.seen, a.username AS admin FROM complaint_responses r LEFT JOIN admins a ON a.id = r.admin_id WHERE r.complaint_id = ? ORDER BY r.id ASC');
-  foreach ($complaints as &$c) {
-    $iStmt->execute([$c['id']]);
-    $c['issues'] = $iStmt->fetchAll();
-    $rStmt->execute([$c['id']]);
-    $c['responses'] = $rStmt->fetchAll();
-  }
-  Database::json(['ok' => true, 'complaints' => $complaints]);
+  dbcon::json(['ok' => true, 'complaints' => (new complaint())->myComplaints($user_id)]);
 } catch (PDOException $e) {
-  Database::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
+  dbcon::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
 }

@@ -31,7 +31,6 @@ async function handleSubmit(e) {
   const payload = {
     from_name: document.getElementById('fName').value.trim(),
     reply_to: document.getElementById('fEmail').value.trim(),
-    company: document.getElementById('fCompany').value.trim(),
     message: document.getElementById('fMessage').value.trim(),
     to_email: 'raajmachawal@protonmail.com',
   };
@@ -43,6 +42,16 @@ async function handleSubmit(e) {
     }
     else alert('Could not send. Please email trishaninfotech9@gmail.com');
   };
+  // Store enquiry in local DB (new structure: api/enquiry/submit.php). Never blocks email send.
+  try {
+    const p0 = location.pathname.replace(/\\/g, '/');
+    const apiBase = p0.indexOf('/pages/accounts/') !== -1 ? '../../../' : (p0.indexOf('/pages/') !== -1 ? '../' : '');
+    fetch(apiBase + 'api/enquiry/submit.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: payload.from_name, email: payload.reply_to, message: payload.message }),
+    }).catch(() => {});
+  } catch (e) {}
   try {
     // Primary: EmailJS sends FROM trishaninfotech9@gmail.com TO raajmachawal@protonmail.com.
     // Fill in your EmailJS keys below after the one-time dashboard setup.
@@ -56,7 +65,6 @@ async function handleSubmit(e) {
         body: JSON.stringify({
           name: payload.from_name,
           email: payload.reply_to,
-          company: payload.company,
           message: payload.message,
           _subject: 'New website enquiry — Trishan Infotech',
           _template: 'table',
@@ -91,6 +99,32 @@ const EMAILJS = {
 };
 if (window.emailjs && EMAILJS.PUBLIC_KEY !== 'YOUR_EMAILJS_PUBLIC_KEY') {
   window.emailjs.init({ publicKey: EMAILJS.PUBLIC_KEY });
+}
+
+// === Session + CSRF helpers (backend uses cookie sessions, Part A) ===
+// Every page includes this file first, so page scripts can use these globals.
+function trishanSession(kind) {
+  try { return JSON.parse(localStorage.getItem(kind === 'admin' ? 'trishan_admin' : 'trishan_user') || 'null'); } catch (e) { return null; }
+}
+function trishanCsrf() {
+  const a = trishanSession('admin');
+  if (a && a.csrf) return a.csrf;
+  const u = trishanSession('user');
+  return (u && u.csrf) || '';
+}
+function trishanHeaders(extra) {
+  const h = Object.assign({ 'Content-Type': 'application/json' }, extra || {});
+  const t = trishanCsrf();
+  if (t) h['X-CSRF-Token'] = t;
+  return h;
+}
+async function trishanLogout(base) {
+  try {
+    await fetch(base + 'api/accounts/logout.php', {
+      method: 'POST', credentials: 'same-origin', headers: trishanHeaders(), body: '{}',
+    });
+  } catch (e) {}
+  try { localStorage.removeItem('trishan_user'); localStorage.removeItem('trishan_admin'); } catch (err) {}
 }
 
 // === Shared components (components/header.html, components/header-auth.html, components/footer.html) ===
@@ -152,10 +186,10 @@ function updateAuthNav(base, current, inPages, loggedIn, adminOnly) {
     return;
   }
   if (!loggedIn) return;
-  document.querySelectorAll('[data-logout]').forEach((el) => {    el.addEventListener('click', (e) => {
+  document.querySelectorAll('[data-logout]').forEach((el) => {    el.addEventListener('click', async (e) => {
       e.preventDefault();
-      try { localStorage.removeItem('trishan_user'); localStorage.removeItem('trishan_admin'); } catch (err) {}
       document.body.classList.remove('menu-open');
+      await trishanLogout(base);
       location.href = base + 'index.html';
     });
   });
@@ -335,16 +369,24 @@ function initMotion() {
   });
 })();
 
+// Contact page: prefill project from ?project= so user Enquiry buttons carry context.
+(function prefillContactProject() {
+  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      const form = document.getElementById('contactForm');
+      if (!form) return;
+      const project = new URLSearchParams(location.search).get('project');
+      if (!project) return;
+      const msg = document.getElementById('fMessage');
+      if (msg && !msg.value.trim()) msg.value = 'Project: ' + project + '\n';
+    } catch (e) {}
+  });
+})();
+
 // === Skeleton loading screen (covers first paint, fades when ready) ===
 let skeletonEl = null;
-function showSkeleton() {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  skeletonEl = document.createElement('div');
-  skeletonEl.className = 'page-skeleton';
-  skeletonEl.setAttribute('aria-hidden', 'true');
-  try { skeletonEl.style.backgroundColor = getComputedStyle(document.body).backgroundColor; } catch (e) {}
-  skeletonEl.innerHTML =
-    '<div class="skel-inner">' +
+function skelPublic() {
+  return '<div class="skel-inner">' +
     '<div class="skel-row"><span class="skel-bar skel-logo"></span>' +
     '<span class="skel-links"><span class="skel-bar skel-link"></span><span class="skel-bar skel-link"></span><span class="skel-bar skel-link"></span><span class="skel-bar skel-link"></span></span></div>' +
     '<span class="skel-bar skel-h1"></span><span class="skel-bar skel-h1 short"></span>' +
@@ -352,6 +394,36 @@ function showSkeleton() {
     '<span class="skel-bar skel-btn"></span>' +
     '<div class="skel-cards"><span class="skel-bar"></span><span class="skel-bar"></span><span class="skel-bar"></span><span class="skel-bar"></span></div>' +
     '</div>';
+}
+function skelAdmin() {
+  const menu = '<span class="skel-bar-dark skel-menu-row"></span>'.repeat(5);
+  const card =
+    '<div class="skel-list-card">' +
+    '<span class="skel-bar skel-l-title"></span><span class="skel-bar skel-l-sub"></span><span class="skel-bar skel-l-date"></span>' +
+    '<span class="skel-bar skel-l-body"></span><span class="skel-bar skel-l-body short"></span>' +
+    '</div>';
+  return '<div class="skel-admin">' +
+    '<div class="skel-side" aria-hidden="true">' +
+      '<div class="skel-brand"><span class="skel-bar-dark skel-brand-sq"></span><span class="skel-brand-tx"><span class="skel-bar-dark"></span><span class="skel-bar-dark"></span></span></div>' +
+      '<span class="skel-bar-dark skel-side-label"></span>' + menu +
+      '<span class="skel-bar-dark skel-side-foot"></span>' +
+    '</div>' +
+    '<div class="skel-main">' +
+      '<div class="skel-topbar"><span class="skel-bar skel-search"></span><span class="skel-id"><span class="skel-bar skel-ava"></span><span class="skel-who"><span class="skel-bar"></span><span class="skel-bar"></span></span></span></div>' +
+      '<span class="skel-bar skel-page-h1"></span><span class="skel-bar skel-page-sub"></span>' +
+      card + card +
+    '</div>' +
+  '</div>';
+}
+function showSkeleton() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  skeletonEl = document.createElement('div');
+  skeletonEl.className = 'page-skeleton';
+  skeletonEl.setAttribute('aria-hidden', 'true');
+  try { skeletonEl.style.backgroundColor = getComputedStyle(document.body).backgroundColor; } catch (e) {}
+  // Match the loader to the page layout: sidebar version on admin pages.
+  const isAdmin = !!document.getElementById('adminShell');
+  skeletonEl.innerHTML = isAdmin ? skelAdmin() : skelPublic();
   document.body.prepend(skeletonEl);
 }
 function hideSkeleton() {

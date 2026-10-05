@@ -53,7 +53,7 @@
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link rel="stylesheet" href="../styles/style.css">
-<script src="../scripts/script.js" defer></script>
+<script src="../scripts/script.js?v=5" defer></script>
 </head>
 <body class="bg-white text-navy-900">
 <!-- BODY START: all visible page content lives inside the body tag -->
@@ -111,7 +111,6 @@
       <input required type="text" name="name" id="fName" placeholder="Full Name" autocomplete="name" class="border border-navy-100 rounded px-4 py-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-navy-700">
       <input required type="email" name="email" id="fEmail" placeholder="Email Address" autocomplete="email" class="border border-navy-100 rounded px-4 py-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-navy-700">
     </div>
-    <input type="text" name="company" id="fCompany" placeholder="Company (optional)" autocomplete="organization" class="border border-navy-100 rounded px-4 py-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-navy-700">
     <textarea required name="message" id="fMessage" placeholder="Tell us about your project" rows="4" class="border border-navy-100 rounded px-4 py-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-navy-700"></textarea>
     <button id="sendBtn" type="submit" class="bg-navy text-white font-semibold px-6 py-3 rounded hover:bg-navy-700 transition w-full sm:w-auto">Send Message</button>
     <p id="formNote" class="text-xs text-navy-900/60 hidden">Thank you — your message has been sent. We&#39;ll respond within 24 hours.</p>

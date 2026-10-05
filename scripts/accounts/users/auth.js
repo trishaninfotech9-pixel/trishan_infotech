@@ -1,9 +1,17 @@
 // Frontend auth: talks to PHP/MySQL backend (api/*.php) on same origin.
 (function () {
   async function postJSON(url, data) {
+    const headers = { 'Content-Type': 'application/json' };
+    try {
+      const a = JSON.parse(localStorage.getItem('trishan_admin') || 'null');
+      const u = JSON.parse(localStorage.getItem('trishan_user') || 'null');
+      const t = (a && a.csrf) || (u && u.csrf) || '';
+      if (t) headers['X-CSRF-Token'] = t;
+    } catch (e) {}
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      headers,
       body: JSON.stringify(data),
     });
     let body = null;
@@ -100,7 +108,11 @@
             password: document.getElementById('loginPassword').value,
           });
           if (body && body.ok) {
-            try { localStorage.setItem('trishan_user', JSON.stringify(body.user)); } catch (e) {}
+            try {
+              const u = body.user || {};
+              if (body.csrf) u.csrf = body.csrf;
+              localStorage.setItem('trishan_user', JSON.stringify(u));
+            } catch (e) {}
             showMsg(msg, 'Login successful. Welcome, ' + (body.user.first_name || '') + '!', false);
             setTimeout(() => { location.href = 'projects.html'; }, 1000);
           } else {

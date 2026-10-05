@@ -16,7 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link rel="stylesheet" href="../../../styles/style.css">
-<script src="../../../scripts/script.js" defer></script>
+<script src="../../../scripts/script.js?v=5" defer></script>
 <script defer>
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('adminLoginForm');
@@ -39,7 +39,11 @@
         });
         const body = await res.json().catch(() => null);
         if (body && body.ok) {
-          try { localStorage.setItem('trishan_admin', JSON.stringify(body.admin)); } catch (err) {}
+          try {
+            const a = body.admin || {};
+            if (body.csrf) a.csrf = body.csrf;
+            localStorage.setItem('trishan_admin', JSON.stringify(a));
+          } catch (err) {}
           msg.textContent = 'Admin login successful. Redirecting…';
           msg.classList.remove('hidden');
           setTimeout(() => { location.href = 'dashboard.html'; }, 1000);

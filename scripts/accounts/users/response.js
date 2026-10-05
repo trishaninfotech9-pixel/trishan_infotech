@@ -26,12 +26,14 @@
 
     list.innerHTML = '<p class="text-sm text-navy-900/60 text-center">Loading…</p>';
     try {
-      const [rc, rp] = await Promise.all([
+      const [rc, rp, re] = await Promise.all([
         fetch('../../../api/accounts/users/my-complaints.php?user_id=' + encodeURIComponent(user.id)),
         fetch('../../../api/accounts/users/my-projects.php?user_id=' + encodeURIComponent(user.id)),
+        fetch('../../../api/accounts/users/my-enquiries.php?user_id=' + encodeURIComponent(user.id)),
       ]);
       const body = await rc.json().catch(() => null);
       const pbody = await rp.json().catch(() => null);
+      const ebody = await re.json().catch(() => null);
       if (!body || !body.ok) throw new Error((body && body.error) || 'Failed to load.');
       // Project status changes (Work Under Process / Completed), same card style as responses.
       const updates = ((pbody && pbody.ok && pbody.projects) || []).filter((p) => p.status === 'complete' || p.status === 'process');
@@ -48,11 +50,29 @@
             '<div class="bg-navy-50 border border-navy-100 rounded p-3 break-words"><p class="text-sm text-navy-900/80 leading-relaxed break-words">' + (done ? 'Your project has been marked as completed.' : 'Your project is currently work under process.') + '</p><p class="text-[11px] text-navy-900/50 mt-1">Admin</p></div>' +
           '</div>';
         }).join('') + '</div></div>';
-      if (!body.complaints.length && !updates.length) {
+      if (!body.complaints.length && !updates.length && !(ebody && ebody.ok && (ebody.enquiries || []).length)) {
         list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-navy-900/70"><i class="bi bi-inbox me-1"></i>No complaints yet.</p><a href="complaint.html" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-gold-600 hover:text-navy transition"><i class="bi bi-flag"></i>Go to Complaint box</a></div>';
         return;
       }
-      list.innerHTML = statusHtml + body.complaints.map((c) => {
+      const enquiries = (ebody && ebody.ok && ebody.enquiries) || [];
+      const enqHtml = !enquiries.length ? '' :
+        '<div class="mb-5"><p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50 mb-2">Project enquiries (' + enquiries.length + ')</p>' +
+        '<div class="space-y-3">' + enquiries.map((q) => {
+          const replied = (q.responses || []).length > 0;
+          const responses = replied
+            ? q.responses.map((r) => '<div class="bg-navy-50 border border-navy-100 rounded p-3 break-words"><p class="text-sm text-navy-900/80 leading-relaxed break-words">' + esc(r.response) + '</p><p class="text-[11px] text-navy-900/50 mt-1">' + esc(r.admin || 'Admin') + ' • ' + esc(fmtDate(r.created_at)) + '</p></div>').join('')
+            : '<p class="text-[13px] text-navy-900/50">Awaiting admin reply…</p>';
+          return '<div class="border border-navy-100 rounded p-4 overflow-hidden">' +
+            '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+              '<p class="flex-1 text-sm font-bold text-navy leading-snug break-words min-w-0">' + esc(q.project_name || 'Enquiry') + '</p>' +
+              '<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full ' + (replied ? 'text-green-700 bg-green-50' : 'text-gold-600 bg-navy-50') + '">' + (replied ? 'Replied' : 'Pending') + '</span>' +
+            '</div>' +
+            '<p class="text-[11px] text-navy-900/50 mb-2">' + esc(fmtDate(q.created_at)) + '</p>' +
+            '<p class="text-sm text-navy-900/80 leading-relaxed break-words mb-3">• ' + esc(q.message) + '</p>' +
+            '<div class="space-y-2">' + responses + '</div>' +
+          '</div>';
+        }).join('') + '</div></div>';
+      list.innerHTML = statusHtml + enqHtml + body.complaints.map((c) => {
         const replied = c.responses.length > 0;
         const issues = c.issues.map((i) => '<li class="text-sm text-navy-900/80 leading-relaxed break-words">• ' + esc(i.description) + '</li>').join('');
         const responses = replied
@@ -72,8 +92,12 @@
         '</div>';
       }).join('');
       // Seen: clear unread flags + navbar badge.
+      const seenHeaders = (typeof trishanHeaders === 'function' ? trishanHeaders() : { 'Content-Type': 'application/json' });
       try {
-        await fetch('../../../api/accounts/users/mark-seen.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: user.id }) });
+        await fetch('../../../api/accounts/users/mark-seen.php', { method: 'POST', credentials: 'same-origin', headers: seenHeaders, body: JSON.stringify({ user_id: user.id }) });
+      } catch (e) {}
+      try {
+        await fetch('../../../api/accounts/users/mark-enquiry-seen.php', { method: 'POST', credentials: 'same-origin', headers: seenHeaders, body: JSON.stringify({ user_id: user.id }) });
       } catch (e) {}
       document.querySelectorAll('[data-response-badge]').forEach((b) => { b.classList.add('hidden'); b.classList.remove('inline-flex'); });
     } catch (err) {

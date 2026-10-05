@@ -15,14 +15,43 @@
     };
     const trashSVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#DC2626" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3V2h11v1z"/></svg>';
 
-    async function api(url, opts) {
+    async function api(url, opts, _retried) {
+      opts = opts || {};
+      opts.credentials = 'same-origin';
+      const headers = { 'Content-Type': 'application/json' };
+      try {
+        const a = JSON.parse(localStorage.getItem('trishan_admin') || 'null');
+        if (a && a.csrf) headers['X-CSRF-Token'] = a.csrf;
+      } catch (e) {}
+      opts.headers = Object.assign(headers, opts.headers || {});
+      if (_retried) delete opts.headers['X-CSRF-Token'];
       const res = await fetch(url, opts);
       const body = await res.json().catch(() => null);
+      if (body && body.error === 'Invalid CSRF token.' && !_retried) {
+        // Session may be alive while the stored token is missing/stale
+        // (e.g. login happened on a cached page): pull the live token and retry once.
+        try {
+          const r = await fetch('../../../api/accounts/csrf.php', { credentials: 'same-origin' });
+          const b = await r.json().catch(() => null);
+          if (b && b.ok && b.csrf) {
+            try {
+              const a = JSON.parse(localStorage.getItem('trishan_admin') || 'null') || {};
+              a.csrf = b.csrf;
+              localStorage.setItem('trishan_admin', JSON.stringify(a));
+            } catch (e) {}
+            delete opts.headers['X-CSRF-Token'];
+            return api(url, opts, true);
+          }
+        } catch (e) {}
+      }
       if (!body || !body.ok) throw new Error((body && body.error) || 'Request failed.');
       return body;
     }
 
     let lastProjects = [];
+    let currentUid = null;
+    let currentCard = null;
+    let currentIndex = 0;
 
     // Project popup (full details). Built once, filled per click.
     let modal = document.getElementById('projModal');
@@ -44,6 +73,7 @@
     function openProject(i) {
       const p = lastProjects[i];
       if (!p) return;
+      currentIndex = i;
       const pd = p.pd || {};
       const money = (v) => (v !== null && v !== '' && v !== undefined) ? '₹' + esc(v) : '';
       const dt = (v) => v ? esc(v) : '';
@@ -64,17 +94,93 @@
         vrow('Next Payment', dt(pd.next_payment_date)) +
         vrow('Last Pay Amount', money(pd.last_pay_amount)) +
         vrow('Last Pay Date', dt(pd.last_pay_date));
+      const canEdit = (p.source || 'assigned') === 'assigned' || (pd && pd.project_name);
       const bodyEl = document.getElementById('projModalBody');
       bodyEl.innerHTML =
         '<p class="font-extrabold text-xl text-navy break-words pr-8">' + esc(p.project_name) + '</p>' +
         '<p class="text-[13px] text-navy-900/60">' + esc(fmtDate(p.created_at)) + (p.open ? (p.complaint_id && p.page ? ' • <a href="' + p.page + '.html?focus=' + p.complaint_id + '" class="font-semibold text-gold-600 hover:underline">open complaint</a>' : ' • <span class="font-semibold text-gold-600">open complaint</span>') : '') + '</p>' +
         (p.details ? '<div><p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50 mb-1">Details</p><p class="text-sm text-navy-900/80 leading-relaxed break-words">' + esc(p.details) + '</p></div>' : '') +
         ((p.budget !== null && p.budget !== '' && p.budget !== undefined) ? '<p class="text-sm font-bold text-navy">Budget: ₹' + esc(p.budget) + '</p>' : '') +
-        (extra ? '<div>' + extra + '</div>' : '');
+        (extra ? '<div>' + extra + '</div>' : '') +
+        (canEdit ? '<div class="pt-2"><button type="button" id="projEditBtn" class="bg-navy text-white text-sm font-semibold px-5 py-2.5 min-h-[44px] rounded hover:bg-navy-700 transition inline-flex items-center gap-2"><i class="bi bi-pencil-square"></i>Edit project</button></div><p id="projEditMsg" class="text-[13px] hidden"></p>' : '<p class="text-[12px] text-navy-900/50">Complaint-only project — add it as a project first to enable editing.</p>');
       modal.classList.remove('hidden');
+      const editBtn = document.getElementById('projEditBtn');
+      if (editBtn) editBtn.addEventListener('click', () => openEditForm());
+    }
+
+    function openEditForm() {
+      const p = lastProjects[currentIndex];
+      if (!p) return;
+      const pd = p.pd || {};
+      const val = (v) => esc(v ?? '');
+      const num = (v) => (v !== null && v !== undefined) ? esc(v) : '';
+      const field = (label, name, attrs, v) => '<div><label class="block text-[12px] font-semibold text-navy mb-1">' + label + '</label><input name="' + name + '" ' + attrs + ' value="' + val(v) + '" class="border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700"></div>';
+      const bodyEl = document.getElementById('projModalBody');
+      bodyEl.innerHTML =
+        '<p class="font-extrabold text-xl text-navy break-words pr-8">Edit: ' + esc(p.project_name) + '</p>' +
+        '<form id="projEditForm" class="space-y-3">' +
+          '<div><label class="block text-[12px] font-semibold text-navy mb-1">Details *</label><textarea name="details" required rows="2" maxlength="2000" class="border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">' + val(p.details) + '</textarea></div>' +
+          '<div class="grid sm:grid-cols-2 gap-3">' +
+            field('Budget *', 'budget', 'required type="number" min="0" step="0.01"', (pd.budget ?? p.budget ?? '')) +
+            field('Domain Name *', 'domain_name', 'required type="text" maxlength="150"', pd.domain_name) +
+            field('Domain Booking Date *', 'domain_booking_date', 'required type="date"', pd.domain_booking_date) +
+            field('Domain Amount *', 'domain_amount', 'required type="number" min="0" step="0.01"', pd.domain_amount) +
+            field('Server Name *', 'server_name', 'required type="text" maxlength="150"', pd.server_name) +
+            field('Server Renewal Date *', 'server_renewal_date', 'required type="date"', pd.server_renewal_date) +
+            field('Server Amount *', 'server_amount', 'required type="number" min="0" step="0.01"', pd.server_amount) +
+            field('AMC Date *', 'amc_date', 'required type="date"', pd.amc_date) +
+            field('AMC Amount *', 'amc_amount', 'required type="number" min="0" step="0.01"', pd.amc_amount) +
+            field('MMC Date *', 'mmc_date', 'required type="date"', pd.mmc_date) +
+            field('MMC Amount *', 'mmc_amount', 'required type="number" min="0" step="0.01"', pd.mmc_amount) +
+            field('Paid *', 'paid_amount', 'required type="number" min="0" step="0.01"', pd.paid_amount) +
+            '<div><label class="block text-[12px] font-semibold text-navy mb-1">Due Amount (auto)</label><input name="due_amount" readonly tabindex="-1" type="number" class="border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-navy-50/60 cursor-not-allowed" value="' + num(pd.due_amount) + '"></div>' +
+            field('Next Payment Date *', 'next_payment_date', 'required type="date"', pd.next_payment_date) +
+            field('Last Pay Amount *', 'last_pay_amount', 'required type="number" min="0" step="0.01"', pd.last_pay_amount) +
+            field('Last Pay Date *', 'last_pay_date', 'required type="date"', pd.last_pay_date) +
+          '</div>' +
+          '<div class="flex gap-2"><button type="submit" class="bg-navy text-white text-sm font-semibold px-5 py-2.5 min-h-[44px] rounded hover:bg-navy-700 transition">Save</button>' +
+          '<button type="button" id="projCancelBtn" class="border border-navy-100 text-sm font-semibold px-5 py-2.5 min-h-[44px] rounded hover:bg-navy-50 transition">Cancel</button></div>' +
+          '<p id="projEditMsg" class="text-[13px] hidden"></p>' +
+        '</form>';
+      const form = document.getElementById('projEditForm');
+      const recalc = () => {
+        const b = parseFloat(form.budget.value);
+        const pa = parseFloat(form.paid_amount.value);
+        form.due_amount.value = isNaN(b) ? '' : String(Math.round(Math.max(0, b - (isNaN(pa) ? 0 : pa)) * 100) / 100);
+      };
+      form.budget.addEventListener('input', recalc);
+      form.paid_amount.addEventListener('input', recalc);
+      document.getElementById('projCancelBtn').addEventListener('click', () => openProject(currentIndex));
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('projEditMsg');
+        msg.classList.add('hidden');
+        const btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        try {
+          const fd = new FormData(form);
+          const payload = { admin_id: admin.id, user_id: p.user_id || currentUid, project_name: p.project_name, details: (fd.get('details') || '').toString().trim(), budget: (fd.get('budget') || '').toString().trim() };
+          ['domain_name','domain_booking_date','domain_amount','server_name','server_renewal_date','server_amount','amc_date','amc_amount','mmc_date','mmc_amount','paid_amount','next_payment_date','last_pay_amount','last_pay_date'].forEach((k) => { payload[k] = (fd.get(k) || '').toString().trim(); });
+          await api('../../../api/accounts/admin/update-project.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          msg.textContent = 'Project updated.';
+          msg.style.color = '';
+          msg.classList.remove('hidden');
+          if (currentCard && currentUid) await loadProjects(currentCard, currentUid);
+          const idx = lastProjects.findIndex((x) => String(x.project_name).toLowerCase() === String(p.project_name).toLowerCase());
+          openProject(idx >= 0 ? idx : currentIndex);
+        } catch (err) {
+          msg.textContent = err.message;
+          msg.style.color = '#DC2626';
+          msg.classList.remove('hidden');
+        } finally {
+          btn.disabled = false;
+        }
+      });
     }
 
     async function loadProjects(card, uid) {
+      currentCard = card;
+      currentUid = uid;
       const listEl = card.querySelector('.u-projects');
       listEl.innerHTML = '<p class="text-sm text-navy-900/60">Loading…</p>';
       try {
@@ -111,11 +217,14 @@
         const name = [u.first_name, u.middle_name, u.last_name].filter(Boolean).join(' ');
         const contact = [u.email, u.phone].filter(Boolean).join(' • ');
         return '<div class="border border-navy-100 rounded bg-white overflow-hidden" data-user="' + u.id + '">' +
-          '<button type="button" class="u-head w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-4 hover:bg-navy-50/60 transition text-left">' +
-            '<span class="min-w-0"><span class="block font-bold text-navy break-words">' + esc(name) + '</span>' +
-            (contact ? '<span class="block text-[13px] text-navy-900/60 break-words">' + esc(contact) + '</span>' : '') + '</span>' +
-            '<i class="bi bi-chevron-down u-chev shrink-0 text-navy-900/50 transition-transform"></i>' +
-          '</button>' +
+          '<div class="w-full flex items-center gap-2 px-4 sm:px-5 py-4 hover:bg-navy-50/60 transition">' +
+            '<button type="button" class="u-head flex-1 flex items-center justify-between gap-3 text-left">' +
+              '<span class="min-w-0"><span class="block font-bold text-navy break-words">' + esc(name) + '</span>' +
+              (contact ? '<span class="block text-[13px] text-navy-900/60 break-words">' + esc(contact) + '</span>' : '') + '</span>' +
+              '<i class="bi bi-chevron-down u-chev shrink-0 text-navy-900/50 transition-transform"></i>' +
+            '</button>' +
+            '<button type="button" class="u-user-del shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition" data-id="' + u.id + '" data-name="' + esc(name) + '" aria-label="Delete user ' + esc(name) + '">' + trashSVG + '</button>' +
+          '</div>' +
           '<div class="u-body hidden border-t border-navy-100 px-4 sm:px-5 py-4 space-y-3">' +
             '<div class="u-projects space-y-2.5"></div>' +
             '<form class="u-add border border-navy-100 rounded p-4 space-y-3 bg-navy-50/40">' +
@@ -263,6 +372,34 @@
           body: JSON.stringify(payload),
         });
         await loadProjects(card, card.dataset.user);
+      } catch (err) {
+        alert(err.message);
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }
+    });
+
+    // Delete user + all their projects, complaints, responses.
+    box.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.u-user-del');
+      if (!btn) return;
+      e.stopPropagation();
+      const card = btn.closest('[data-user]');
+      const uid = btn.dataset.id || (card && card.dataset.user);
+      const uname = btn.dataset.name || 'this user';
+      if (!confirm('Delete user "' + uname + '"? This removes their projects, complaints and responses. This cannot be undone.')) return;
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      try {
+        await api('../../../api/accounts/admin/delete-user.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ admin_id: admin.id, user_id: uid }),
+        });
+        if (card) card.remove();
+        if (!box.querySelector('[data-user]')) {
+          box.innerHTML = '<div class="border border-navy-100 rounded p-5 text-center bg-white"><p class="text-sm text-navy-900/60">No users yet.</p></div>';
+        }
       } catch (err) {
         alert(err.message);
         btn.disabled = false;

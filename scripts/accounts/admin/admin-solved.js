@@ -130,7 +130,8 @@
       try {
         const res = await fetch('../../../api/accounts/admin/delete-complaint.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          headers: (typeof trishanHeaders === 'function' ? trishanHeaders() : { 'Content-Type': 'application/json' }),
           body: JSON.stringify({ admin_id: admin.id, complaint_id: complaintId }),
         });
         const body = await res.json().catch(() => null);

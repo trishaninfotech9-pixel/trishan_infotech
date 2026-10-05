@@ -1,7 +1,7 @@
 <?php
-// Central MySQL (PDO) connection, schema migrations and JSON responder.
-// Local DB: root / '' / trishan_db
-final class Database {
+// Base DB + shared helpers. Mirrors vendor/classess/default/dbcon.class.php pattern.
+// All other api/class/* classes extend dbcon.
+class dbcon {
   private static ?PDO $pdo = null;
 
   public static function conn(): PDO {
@@ -25,6 +25,136 @@ final class Database {
     header('Content-Type: application/json');
     echo json_encode($data);
     exit;
+  }
+
+  // ---- shared request helpers (removes repetition across 22 endpoints) ----
+  public static function method(string $want): void {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== $want) {
+      self::json(['ok' => false, 'error' => 'Method not allowed.'], 405);
+    }
+  }
+
+  public static function input(): array {
+    $in = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($in)) $in = $_POST;
+    return $in;
+  }
+
+  public static function fullName(array $account): string {
+    return trim(implode(' ', array_filter([
+      $account['first_name'] ?? '', $account['middle_name'] ?? '', $account['last_name'] ?? ''
+    ])));
+  }
+
+  // ---- secure server-side sessions (S-01 fix; identity NEVER comes from the request) ----
+  // One session cookie (TRISHAN_SESS) with strictly separate identity keys:
+  // requireAdmin() reads ONLY $_SESSION['admin_id'], requireUser() ONLY
+  // $_SESSION['user_id']. Each key is set solely by its own verified login,
+  // and each login clears the other key, so a user session can never act as
+  // admin. (Two cookie names were tried first, but PHP reuses the previous
+  // session ID across a mid-request session_name() switch, which resumed the
+  // wrong session file and overwrote the good cookie — verified empirically.)
+  private const SESSION_IDLE = 1800;      // 30 min inactivity
+  private const SESSION_USER_MAX = 28800; // 8 hours absolute (users)
+  private const SESSION_ADMIN_MAX = 7200; // 2 hours absolute (admins)
+
+  // Starts (or resumes) the session with hardened cookie + mode flags.
+  public static function startSession(): void {
+    if (session_status() === PHP_SESSION_ACTIVE) { self::checkExpiry(); return; }
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    ini_set('session.cookie_httponly', '1');
+    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+    session_set_cookie_params([
+      'lifetime' => 0, 'path' => '/', 'httponly' => true,
+      'samesite' => 'Lax', 'secure' => $secure,
+    ]);
+    session_name('TRISHAN_SESS');
+    session_start();
+    self::checkExpiry();
+  }
+
+  private static function checkExpiry(): void {
+    $now = time();
+    if (!isset($_SESSION['created'])) {
+      $_SESSION['created'] = $now;
+      $_SESSION['last_activity'] = $now;
+      return;
+    }
+    $isAdmin = !empty($_SESSION['admin_id']);
+    $max = $isAdmin ? self::SESSION_ADMIN_MAX : self::SESSION_USER_MAX;
+    if (($now - (int)$_SESSION['created'] > $max)
+      || ($now - (int)$_SESSION['last_activity'] > self::SESSION_IDLE)) {
+      self::destroySession();
+      self::json(['ok' => false, 'error' => $isAdmin ? 'Admin login required.' : 'Login required.'], 401);
+    }
+    $_SESSION['last_activity'] = $now;
+  }
+
+  public static function destroySession(): void {
+    $_SESSION = [];
+    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+    // Current name + legacy names from the earlier two-cookie attempt.
+    foreach (['TRISHAN_SESS', 'TRISHAN_ADMIN', 'TRISHAN_USER'] as $name) {
+      setcookie($name, '', [
+        'expires' => time() - 3600, 'path' => '/', 'httponly' => true,
+        'samesite' => 'Lax', 'secure' => $secure,
+      ]);
+    }
+    if (session_status() === PHP_SESSION_ACTIVE) session_destroy();
+  }
+
+  // Identity comes ONLY from $_SESSION['admin_id'] (set by verified admin login).
+  public static function requireAdmin(): int {
+    self::startSession();
+    $admin_id = (int)($_SESSION['admin_id'] ?? 0);
+    if ($admin_id <= 0) self::json(['ok' => false, 'error' => 'Admin login required.'], 401);
+    $stmt = self::conn()->prepare('SELECT id FROM admins WHERE id = ? LIMIT 1');
+    $stmt->execute([$admin_id]);
+    if (!$stmt->fetch()) { self::destroySession(); self::json(['ok' => false, 'error' => 'Admin login required.'], 401); }
+    return $admin_id;
+  }
+
+  // Identity comes ONLY from $_SESSION['user_id'] (set by verified user login).
+  public static function requireUser(): int {
+    self::startSession();
+    $user_id = (int)($_SESSION['user_id'] ?? 0);
+    if ($user_id <= 0) self::json(['ok' => false, 'error' => 'Login required.'], 401);
+    $stmt = self::conn()->prepare('SELECT id FROM users WHERE id = ? LIMIT 1');
+    $stmt->execute([$user_id]);
+    if (!$stmt->fetch()) { self::destroySession(); self::json(['ok' => false, 'error' => 'Login required.'], 401); }
+    return $user_id;
+  }
+
+  // Plain row fetch, no auth implication. Returns null when missing.
+  // Admin endpoints use it for the *target* user they manage (404 on miss).
+  public static function userRow(int $user_id): ?array {
+    $stmt = self::conn()->prepare('SELECT id, first_name, middle_name, last_name, email, phone FROM users WHERE id = ? LIMIT 1');
+    $stmt->execute([$user_id]);
+    return $stmt->fetch() ?: null;
+  }
+
+  // ---- CSRF: one token per session, sent via X-CSRF-Token on POST ----
+  public static function csrfToken(): string {
+    if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(32));
+    return $_SESSION['csrf'];
+  }
+
+  public static function requireCsrf(): void {
+    $sent = (string)($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    $want = (string)($_SESSION['csrf'] ?? '');
+    if ($want === '' || $sent === '' || !hash_equals($want, $sent)) {
+      self::json(['ok' => false, 'error' => 'Invalid CSRF token.'], 403);
+    }
+  }
+
+  // Returns the token for the current session (either role). 401 when logged out.
+  public static function sessionCsrf(): string {
+    self::startSession();
+    if (empty($_SESSION['admin_id']) && empty($_SESSION['user_id'])) {
+      self::json(['ok' => false, 'error' => 'Login required.'], 401);
+    }
+    return self::csrfToken();
   }
 
   private static function migrate(PDO $pdo): void {
@@ -81,9 +211,7 @@ final class Database {
     } catch (PDOException $e) {
       if ($e->getCode() !== '42S21') throw $e;
     }
-    // One-time catch-up: already-solved complaints get their latest response time as solved time.
-    $pdo->exec("UPDATE complaints c SET c.solved_at = (SELECT MAX(r.created_at) FROM complaint_responses r WHERE r.complaint_id = c.id) WHERE c.is_solved = 1 AND c.solved_at IS NULL AND EXISTS (SELECT 1 FROM complaint_responses r WHERE r.complaint_id = c.id)");
-    $pdo->exec("UPDATE complaints c JOIN users u ON u.id = c.user_id SET c.username = TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) WHERE c.username = ''");
+    // Create child tables BEFORE catch-up UPDATEs that reference them (fresh DB safe).
     try {
       $pdo->exec("ALTER TABLE users ADD COLUMN status_seen_at TIMESTAMP NULL DEFAULT NULL");
     } catch (PDOException $e) {
@@ -108,6 +236,9 @@ final class Database {
       FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
       FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL
     )");
+    // One-time catch-up: already-solved complaints get their latest response time as solved time.
+    $pdo->exec("UPDATE complaints c SET c.solved_at = (SELECT MAX(r.created_at) FROM complaint_responses r WHERE r.complaint_id = c.id) WHERE c.is_solved = 1 AND c.solved_at IS NULL AND EXISTS (SELECT 1 FROM complaint_responses r WHERE r.complaint_id = c.id)");
+    $pdo->exec("UPDATE complaints c JOIN users u ON u.id = c.user_id SET c.username = TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)) WHERE c.username = ''");
     try {
       $pdo->exec("ALTER TABLE complaint_responses ADD COLUMN seen TINYINT(1) NOT NULL DEFAULT 0");
     } catch (PDOException $e) {
@@ -248,5 +379,46 @@ final class Database {
     $pdo->exec("INSERT INTO project_status_log (user_id, project_name, event, created_at)
       SELECT p.user_id, p.project_name, 'process', COALESCE(p.status_updated_at, p.created_at) FROM projects p
       WHERE p.is_under_process = 1 AND NOT EXISTS (SELECT 1 FROM project_status_log l WHERE l.user_id = p.user_id AND l.project_name = p.project_name AND l.event = 'process')");
+    // Website enquiries (contact form). Public submit, admin lists/deletes.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS enquiries (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(150) NOT NULL,
+      email VARCHAR(150) NOT NULL,
+      message TEXT NOT NULL,
+      seen_admin TINYINT(1) NOT NULL DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      KEY idx_enq_seen (seen_admin)
+    )");
+    try { $pdo->exec("ALTER TABLE enquiries DROP COLUMN company"); }
+    catch (PDOException $e) { /* already gone — ignore */ }
+    // Per-project user enquiry threads (like complaints): who asked + which project.
+    foreach ([
+      "user_id INT NOT NULL DEFAULT 0",
+      "username VARCHAR(150) NOT NULL DEFAULT ''",
+      "project_name VARCHAR(150) NOT NULL DEFAULT ''",
+    ] as $def) {
+      try { $pdo->exec("ALTER TABLE enquiries ADD COLUMN $def"); }
+      catch (PDOException $e) { if ($e->getCode() !== '42S21') throw $e; }
+    }
+    $pdo->exec("CREATE TABLE IF NOT EXISTS enquiry_responses (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      enquiry_id INT NOT NULL,
+      username VARCHAR(150) NOT NULL DEFAULT '',
+      admin_id INT NULL,
+      response TEXT NOT NULL,
+      seen TINYINT(1) NOT NULL DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (enquiry_id) REFERENCES enquiries(id) ON DELETE CASCADE,
+      FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL
+    )");
+    // New-user signups notify the admin bell. Backfill runs ONLY on the migrate
+    // that first creates the column (existing rows predate notifications);
+    // later signups keep DEFAULT 0 so the bell fires for them.
+    try {
+      $pdo->exec("ALTER TABLE users ADD COLUMN seen_admin TINYINT(1) NOT NULL DEFAULT 0");
+      $pdo->exec("UPDATE users SET seen_admin = 1");
+    } catch (PDOException $e) {
+      if ($e->getCode() !== '42S21') throw $e;
+    }
   }
 }
