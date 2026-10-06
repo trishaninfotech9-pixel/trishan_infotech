@@ -121,19 +121,17 @@ button:active { transform: scale(.97); }
 [data-toggle-password] i { pointer-events: none; }
 
 /* Professional micro-animations (JS-driven parts live in script.js / shell.js) */
-[data-toggle-password] { min-width: 44px; min-height: 44px; cursor: pointer; }
-[data-toggle-password] i { pointer-events: none; }
 @keyframes rise-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 /* Lists rise in with a soft stagger as rows render */
-#enquiryList > div, #projectList > div, #userCards > div, #responseList > div,
+#enquiryList > div, #projectList > div, #userCards > div, #userCards > button, #responseList > div,
 #complaintList > div, #complaintList > table, #solvedList > div, #ignoredList > div {
   animation: rise-in .5s cubic-bezier(.22,1,.36,1) both;
 }
-#enquiryList > div:nth-child(2), #projectList > div:nth-child(2), #userCards > div:nth-child(2),
+#enquiryList > div:nth-child(2), #projectList > div:nth-child(2), #userCards > div:nth-child(2), #userCards > button:nth-child(2),
 #responseList > div:nth-child(2), #solvedList > div:nth-child(2), #ignoredList > div:nth-child(2) { animation-delay: .07s; }
-#enquiryList > div:nth-child(3), #projectList > div:nth-child(3), #userCards > div:nth-child(3),
+#enquiryList > div:nth-child(3), #projectList > div:nth-child(3), #userCards > div:nth-child(3), #userCards > button:nth-child(3),
 #responseList > div:nth-child(3), #solvedList > div:nth-child(3), #ignoredList > div:nth-child(3) { animation-delay: .14s; }
-#enquiryList > div:nth-child(n+4), #projectList > div:nth-child(n+4), #userCards > div:nth-child(n+4),
+#enquiryList > div:nth-child(n+4), #projectList > div:nth-child(n+4), #userCards > div:nth-child(n+4), #userCards > button:nth-child(n+4),
 #responseList > div:nth-child(n+4), #solvedList > div:nth-child(n+4), #ignoredList > div:nth-child(n+4) { animation-delay: .21s; }
 /* Modal pops in each time it opens (display toggles re-run the animation) */
 @keyframes pop-in { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
@@ -148,11 +146,38 @@ button:active { transform: scale(.97); }
   60% { transform: rotate(8deg); } 80% { transform: rotate(-6deg); }
 }
 .bell-ring { animation: bell-ring .65s ease; transform-origin: top center; }
+
+/* Living gradient headlines: slow, barely-there sheen sweep */
+.text-gradient { background-size: 200% auto; animation: gradient-pan 9s ease-in-out infinite alternate; }
+@keyframes gradient-pan { from { background-position: 0% center; } to { background-position: 100% center; } }
+
+/* Sidebar submenus glide open instead of snapping */
+.admin-sub {
+  display: flex; flex-direction: column; gap: 2px;
+  margin: 0 0 0 26px; padding-left: 12px;
+  border-left: 1px solid transparent;
+  max-height: 0; opacity: 0; overflow: hidden;
+  transition: max-height .38s cubic-bezier(.22,1,.36,1), opacity .3s ease, margin .38s ease, border-color .3s ease;
+}
+.admin-group.open .admin-sub { max-height: 300px; opacity: 1; margin: 2px 0 2px 26px; border-left-color: rgba(255,255,255,.25); }
+
+/* Dropdowns (log menu, notifications) pop in when revealed */
+.logmenu:not(.hidden), .admin-notif:not(.hidden) { animation: pop-in .25s cubic-bezier(.22,1,.36,1) both; }
+.logmenu:not(.hidden) { transform-origin: bottom center; }
+
+/* Dashboard stat cards lift on hover */
+div:has(> [data-stat]) { transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s; }
+div:has(> [data-stat]):hover { transform: translateY(-5px); box-shadow: 0 16px 34px rgba(3,105,161,.14); }
+
 @media (prefers-reduced-motion: reduce) {
-  #enquiryList > div, #projectList > div, #userCards > div, #responseList > div,
+  #enquiryList > div, #projectList > div, #userCards > div, #userCards > button, #responseList > div,
   #complaintList > div, #complaintList > table, #solvedList > div, #ignoredList > div,
-  #projModal:not(.hidden) > .relative, .bell-ring { animation: none; }
+  #projModal:not(.hidden) > .relative, .bell-ring,
+  .logmenu:not(.hidden), .admin-notif:not(.hidden) { animation: none; }
   .bg-navy:active { transform: none; }
+  .text-gradient { animation: none; }
+  .admin-sub { transition: none; }
+  div:has(> [data-stat]):hover { transform: none; }
 }
 .nav-active { color: #0C4A6E; font-weight: 700; }
 #desktopNav a[data-nav]:not(.bg-navy) { position: relative; }

@@ -5,6 +5,23 @@ class user extends dbcon {
     return self::conn()->query('SELECT id, first_name, middle_name, last_name, email, phone, created_at FROM users ORDER BY first_name ASC, id ASC')->fetchAll();
   }
 
+  // Same list plus each user's project counts (assigned + complaint-sourced
+  // project names, deduplicated — mirrors what the project pages list).
+  // pending = not flagged complete; complete = flagged complete.
+  public function listUsersWithCounts(): array {
+    return self::conn()->query(
+      'SELECT u.id, u.first_name, u.middle_name, u.last_name, u.email, u.phone, u.created_at, ' .
+      'COALESCE(m.total, 0) AS project_count, COALESCE(m.complete_count, 0) AS complete_count, COALESCE(m.pending_count, 0) AS pending_count ' .
+      'FROM users u LEFT JOIN (SELECT y.user_id, COUNT(*) AS total, ' .
+      'SUM(y.is_complete = 1) AS complete_count, SUM(y.is_complete <> 1) AS pending_count FROM ' .
+      '(SELECT x.user_id, x.project_name, MAX(x.is_complete) AS is_complete FROM ' .
+      '(SELECT p.user_id, p.project_name, p.is_complete FROM projects p ' .
+      'UNION ALL SELECT c.user_id, c.project_name, 0 FROM complaints c) x ' .
+      'GROUP BY x.user_id, x.project_name) y GROUP BY y.user_id) m ON m.user_id = u.id ' .
+      'ORDER BY u.first_name ASC, u.id ASC'
+    )->fetchAll();
+  }
+
   public function getById(int $user_id): ?array {
     $stmt = self::conn()->prepare('SELECT id, first_name, middle_name, last_name, email, phone FROM users WHERE id = ? LIMIT 1');
     $stmt->execute([$user_id]);

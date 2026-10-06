@@ -15,10 +15,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
-<link rel="stylesheet" href="../../../styles/style.css?v=8">
+<link rel="stylesheet" href="../../../styles/style.css?v=10">
 <script src="../../../scripts/script.js?v=8" defer></script>
 <script>window.ADMIN_PROJECT_MODE = 'all';</script>
-<script src="../../../scripts/accounts/admin/admin-projects.js?v=4" defer></script>
+<script src="../../../scripts/accounts/admin/admin-projects.js?v=8" defer></script>
 <script src="../../../scripts/accounts/admin/shell.js?v=4" defer></script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
@@ -33,21 +33,29 @@
 <!-- ALL PROJECTS SECTION -->
 <section class="max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14 w-full">
   <div class="max-w-6xl mx-auto">
-    <!-- PAGE TITLE -->
-    <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-navy-900 mb-1.5">All Project</h1>
-    <p class="hero-lead text-sm text-navy-900/60 mb-6">Hi <span id="adminProjectsName">Admin</span>, pick a user to see all their projects.</p>
-    <!-- USER DROPDOWN -->
-    <div class="border border-navy-100 rounded p-4 sm:p-5 mb-4 bg-white">
-      <label for="userSelect" class="block text-[13px] font-semibold text-navy mb-1">Select User</label>
-      <select id="userSelect" class="border border-navy-100 rounded px-3.5 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-navy-700 bg-white">
-        <option value="">— Choose a user —</option>
-      </select>
-      <p id="userInfo" class="text-[13px] text-navy-900/60 mt-2 break-all"></p>
+    <!-- PAGE TITLE + SEARCH -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div class="min-w-0">
+        <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-navy-900 mb-1.5">All Project</h1>
+        <p class="hero-lead text-sm text-navy-900/60">Hi <span id="adminProjectsName">Admin</span>, pick a user to see all their projects.</p>
+      </div>
+      <!-- USER SEARCH -->
+      <div class="w-full md:w-72 shrink-0">
+        <label for="userSearch" class="sr-only">Search users</label>
+        <div class="relative">
+          <i class="bi bi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-900/40 text-sm"></i>
+          <input type="search" id="userSearch" placeholder="Search by name, email or phone…" autocomplete="off" class="border border-navy-100 rounded pl-10 pr-3.5 py-2.5 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">
+        </div>
+      </div>
     </div>
-    <!-- PROJECT TABLE -->
-    <div id="projectTableWrap" class="space-y-3"></div>
+    <!-- USER CARDS -->
+    <div id="userCards" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
+    <p class="text-[13px] text-navy-900/50 text-center">Click a user card to see their projects in a popup.</p>
   </div>
 </section>
 
 </body>
 </html>
+
+
+

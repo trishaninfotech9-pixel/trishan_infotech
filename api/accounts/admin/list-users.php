@@ -5,7 +5,7 @@ dbcon::method('GET');
 dbcon::requireAdmin();
 
 try {
-  $users = (new user())->listUsers();
+  $users = (new user())->listUsersWithCounts();
   dbcon::json(['ok' => true, 'users' => $users]);
 } catch (PDOException $e) {
   dbcon::json(['ok' => false, 'error' => 'Server error: ' . $e->getMessage()], 500);
