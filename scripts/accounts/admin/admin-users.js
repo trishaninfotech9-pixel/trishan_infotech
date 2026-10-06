@@ -1,4 +1,4 @@
-// pages/accounts/admin/users.html logic: alphabetical user list, expand to manage projects.
+// pages/accounts/admin/users.html logic: user cards + search, click a card to manage projects below.
 (function () {
   document.addEventListener('DOMContentLoaded', async () => {
     let admin = null;
@@ -7,6 +7,10 @@
     document.getElementById('adminUsersName').textContent = admin.username || 'Admin';
 
     const box = document.getElementById('userCards');
+    const search = document.getElementById('userSearch');
+    const detail = document.getElementById('userDetail');
+    let allUsers = [];
+    let selectedUid = '';
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const fmtDate = (d) => {
       try {
@@ -204,87 +208,138 @@
       }
     }
 
-    box.innerHTML = '<p class="text-sm text-navy-900/60 text-center">Loading…</p>';
-    try {
-      const body = await api('../../../api/accounts/admin/list-users.php?admin_id=' + encodeURIComponent(admin.id));
-      const users = (body.users || []).slice().sort((a, b) =>
-        ([a.first_name, a.last_name].filter(Boolean).join(' ') || '').localeCompare([b.first_name, b.last_name].filter(Boolean).join(' '), undefined, { sensitivity: 'base' }));
+    function userDisplayName(u) {
+      return [u.first_name, u.middle_name, u.last_name].filter(Boolean).join(' ') || 'Unnamed';
+    }
+
+    function renderUserCards() {
+      const q = (search && search.value.trim().toLowerCase()) || '';
+      const users = !q ? allUsers : allUsers.filter((u) => {
+        const hay = userDisplayName(u) + ' ' + (u.email || '') + ' ' + (u.phone || '');
+        return hay.toLowerCase().indexOf(q) !== -1;
+      });
       if (!users.length) {
-        box.innerHTML = '<div class="border border-navy-100 rounded p-5 text-center bg-white"><p class="text-sm text-navy-900/60">No users yet.</p></div>';
+        box.innerHTML = '<div class="border border-navy-100 rounded p-5 text-center bg-white col-span-full"><p class="text-sm text-navy-900/60">' + (q ? 'No users match your search.' : 'No users yet.') + '</p></div>';
         return;
       }
       box.innerHTML = users.map((u) => {
-        const name = [u.first_name, u.middle_name, u.last_name].filter(Boolean).join(' ');
-        const contact = [u.email, u.phone].filter(Boolean).join(' • ');
-        return '<div class="border border-navy-100 rounded bg-white overflow-hidden" data-user="' + u.id + '">' +
-          '<div class="w-full flex items-center gap-2 px-4 sm:px-5 py-4 hover:bg-navy-50/60 transition">' +
-            '<button type="button" class="u-head flex-1 flex items-center justify-between gap-3 text-left">' +
-              '<span class="min-w-0"><span class="block font-bold text-navy break-words">' + esc(name) + '</span>' +
-              (contact ? '<span class="block text-[13px] text-navy-900/60 break-words">' + esc(contact) + '</span>' : '') + '</span>' +
-              '<i class="bi bi-chevron-down u-chev shrink-0 text-navy-900/50 transition-transform"></i>' +
+        const name = userDisplayName(u);
+        const n = +u.project_count || 0;
+        return '<div class="ucard bg-white border border-navy-100 rounded-xl p-4 sm:p-5 shadow-sm hover:border-navy-700 hover:shadow transition" data-user="' + u.id + '">' +
+          '<div class="w-full flex items-center gap-2">' +
+            '<button type="button" class="u-pick flex-1 flex items-center gap-3 text-left min-w-0">' +
+              '<span class="w-10 h-10 shrink-0 rounded-full bg-navy-50 text-navy font-extrabold flex items-center justify-center">' + esc(name.trim().charAt(0).toUpperCase() || '?') + '</span>' +
+              '<span class="min-w-0 flex-1"><span class="block font-bold text-navy leading-snug break-words">' + esc(name) + '</span>' +
+              '<span class="block text-[12px] text-navy-900/50 break-all">' + esc(u.email || '') + '</span>' +
+              (u.phone ? '<span class="block text-[12px] text-navy-900/50">' + esc(u.phone) + '</span>' : '') +
+              '<span class="inline-block mt-1.5 text-[12px] font-bold px-2.5 py-1 rounded-full ' + (n ? 'text-navy bg-navy-50' : 'text-navy-900/40 bg-navy-50/60') + '">' + n + (n === 1 ? ' project' : ' projects') + '</span></span>' +
             '</button>' +
             '<button type="button" class="u-user-del shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition" data-id="' + u.id + '" data-name="' + esc(name) + '" aria-label="Delete user ' + esc(name) + '">' + trashSVG + '</button>' +
           '</div>' +
-          '<div class="u-body hidden border-t border-navy-100 px-4 sm:px-5 py-4 space-y-3">' +
-            '<div class="u-projects space-y-2.5"></div>' +
-            '<form class="u-add border border-navy-100 rounded p-4 space-y-3 bg-navy-50/40">' +
-              '<p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50">Add Project</p>' +
-              '<input required type="text" maxlength="150" placeholder="Project name" class="u-name border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">' +
-              '<textarea required rows="2" maxlength="2000" placeholder="Project details" class="u-det border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700"></textarea>' +
-              '<div class="grid sm:grid-cols-2 gap-3">' + [
-                ['u-bud', 'Budget', 'required type="number" min="0" step="0.01"'],
-                ['u-f-domain_name', 'Domain Name', 'required type="text" maxlength="150"'],
-                ['u-f-domain_booking_date', 'Domain Booking Date', 'required type="date"'],
-                ['u-f-domain_amount', 'Domain Amount', 'required type="number" min="0" step="0.01"'],
-                ['u-f-server_name', 'Server Name', 'required type="text" maxlength="150"'],
-                ['u-f-server_renewal_date', 'Server Renewal Date', 'required type="date"'],
-                ['u-f-server_amount', 'Server Amount', 'required type="number" min="0" step="0.01"'],
-                ['u-f-amc_date', 'AMC Date', 'required type="date"'],
-                ['u-f-amc_amount', 'AMC Amount', 'required type="number" min="0" step="0.01"'],
-                ['u-f-mmc_date', 'MMC Date', 'required type="date"'],
-                ['u-f-mmc_amount', 'MMC Amount', 'required type="number" min="0" step="0.01"'],
-                ['u-f-paid_amount', 'Paid', 'required type="number" min="0" step="0.01"'],
-                ['u-f-due_amount', 'Due Amount (auto)', 'readonly tabindex="-1" type="number" min="0" step="0.01" placeholder="Auto = Budget − Paid"', 'bg-navy-50/60 cursor-not-allowed'],
-                ['u-f-next_payment_date', 'Next Payment Date', 'required type="date"'],
-                ['u-f-last_pay_amount', 'Last Pay Amount', 'required type="number" min="0" step="0.01"'],
-                ['u-f-last_pay_date', 'Last Pay Date', 'required type="date"'],
-              ].map((f) =>
-                '<div><label class="block text-[12px] font-semibold text-navy mb-1">' + f[1] + (f[0] === 'u-f-due_amount' ? '' : ' *') + '</label>' +
-                '<input ' + f[2] + ' class="' + f[0] + ' border border-navy-100 rounded px-3.5 py-2 text-sm w-full ' + (f[3] || 'bg-white') + ' focus:outline-none focus:ring-2 focus:ring-navy-700"></div>'
-              ).join('') +
-              '</div>' +
-                '<button type="submit" class="shrink-0 bg-navy text-white text-sm font-semibold px-5 py-2.5 min-h-[44px] rounded hover:bg-navy-700 transition inline-flex items-center gap-2"><i class="bi bi-plus-circle"></i>Add</button>' +
-              '<p class="u-msg text-[13px] hidden"></p>' +
-            '</form>' +
-          '</div>' +
         '</div>';
       }).join('');
-    } catch (err) {
-      box.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center bg-white"><p class="text-sm text-red-600">' + esc(err.message) + '</p></div>';
-      return;
+      paintUserSelected();
+    }
+
+    function paintUserSelected() {
+      box.querySelectorAll('.ucard').forEach((c) => {
+        const on = String(c.dataset.user) === String(selectedUid);
+        c.classList.toggle('border-navy-700', on);
+        c.classList.toggle('ring-2', on);
+        c.classList.toggle('ring-navy-700', on);
+        c.classList.toggle('border-navy-100', !on);
+      });
+    }
+
+    async function loadUserList() {
+      box.innerHTML = '<p class="text-sm text-navy-900/60 text-center col-span-full">Loading…</p>';
+      try {
+        const body = await api('../../../api/accounts/admin/list-users.php?admin_id=' + encodeURIComponent(admin.id));
+        allUsers = ((body.users || [])).slice().sort((a, b) =>
+          (userDisplayName(a) || '').localeCompare(userDisplayName(b) || '', undefined, { sensitivity: 'base' }));
+        renderUserCards();
+      } catch (err) {
+        box.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center bg-white col-span-full"><p class="text-sm text-red-600">' + esc(err.message) + '</p></div>';
+      }
+    }
+
+    if (search) search.addEventListener('input', renderUserCards);
+
+    function addFormHTML() {
+      return '<form class="u-add border border-navy-100 rounded p-4 space-y-3 bg-navy-50/40">' +
+        '<p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50">Add Project</p>' +
+        '<input required type="text" maxlength="150" placeholder="Project name" class="u-name border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">' +
+        '<textarea required rows="2" maxlength="2000" placeholder="Project details" class="u-det border border-navy-100 rounded px-3.5 py-2 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700"></textarea>' +
+        '<div class="grid sm:grid-cols-2 gap-3">' + [
+          ['u-bud', 'Budget', 'required type="number" min="0" step="0.01"'],
+          ['u-f-domain_name', 'Domain Name', 'required type="text" maxlength="150"'],
+          ['u-f-domain_booking_date', 'Domain Booking Date', 'required type="date"'],
+          ['u-f-domain_amount', 'Domain Amount', 'required type="number" min="0" step="0.01"'],
+          ['u-f-server_name', 'Server Name', 'required type="text" maxlength="150"'],
+          ['u-f-server_renewal_date', 'Server Renewal Date', 'required type="date"'],
+          ['u-f-server_amount', 'Server Amount', 'required type="number" min="0" step="0.01"'],
+          ['u-f-amc_date', 'AMC Date', 'required type="date"'],
+          ['u-f-amc_amount', 'AMC Amount', 'required type="number" min="0" step="0.01"'],
+          ['u-f-mmc_date', 'MMC Date', 'required type="date"'],
+          ['u-f-mmc_amount', 'MMC Amount', 'required type="number" min="0" step="0.01"'],
+          ['u-f-paid_amount', 'Paid', 'required type="number" min="0" step="0.01"'],
+          ['u-f-due_amount', 'Due Amount (auto)', 'readonly tabindex="-1" type="number" min="0" step="0.01" placeholder="Auto = Budget − Paid"', 'bg-navy-50/60 cursor-not-allowed'],
+          ['u-f-next_payment_date', 'Next Payment Date', 'required type="date"'],
+          ['u-f-last_pay_amount', 'Last Pay Amount', 'required type="number" min="0" step="0.01"'],
+          ['u-f-last_pay_date', 'Last Pay Date', 'required type="date"'],
+        ].map((f) =>
+          '<div><label class="block text-[12px] font-semibold text-navy mb-1">' + f[1] + (f[0] === 'u-f-due_amount' ? '' : ' *') + '</label>' +
+          '<input ' + f[2] + ' class="' + f[0] + ' border border-navy-100 rounded px-3.5 py-2 text-sm w-full ' + (f[3] || 'bg-white') + ' focus:outline-none focus:ring-2 focus:ring-navy-700"></div>'
+        ).join('') +
+        '</div>' +
+        '<button type="submit" class="shrink-0 bg-navy text-white text-sm font-semibold px-5 py-2.5 min-h-[44px] rounded hover:bg-navy-700 transition inline-flex items-center gap-2"><i class="bi bi-plus-circle"></i>Add</button>' +
+        '<p class="u-msg text-[13px] hidden"></p>' +
+      '</form>';
+    }
+
+    function openUser(uid) {
+      const u = allUsers.find((x) => String(x.id) === String(uid));
+      if (!u) return;
+      selectedUid = uid;
+      paintUserSelected();
+      const name = userDisplayName(u);
+      const contact = [u.email, u.phone].filter(Boolean).join(' • ');
+      detail.innerHTML =
+        '<div class="border border-navy-700 rounded-2xl bg-white p-4 sm:p-6 shadow-sm space-y-4" data-user="' + u.id + '">' +
+          '<div class="flex items-start justify-between gap-3">' +
+            '<div class="min-w-0"><p class="font-extrabold text-xl text-navy break-words">' + esc(name) + '</p>' +
+            (contact ? '<p class="text-[13px] text-navy-900/60 break-words">' + esc(contact) + '</p>' : '') + '</div>' +
+            '<button type="button" class="u-close shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-navy-50 transition" aria-label="Close"><i class="bi bi-x-lg text-navy"></i></button>' +
+          '</div>' +
+          '<div class="u-projects space-y-2.5"></div>' +
+          addFormHTML() +
+        '</div>';
+      const panel = detail.firstElementChild;
+      loadProjects(panel, uid);
+      detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     // Click a project card (not the dustbin) to pop up full details.
-    box.addEventListener('click', (e) => {
+    detail.addEventListener('click', (e) => {
       if (e.target.closest('.u-del')) return;
       const card = e.target.closest('[data-pcard]');
       if (!card) return;
       openProject(+card.dataset.pcard);
     });
 
-    // Expand / collapse a user.
+    // Select a user card to manage below; close button clears selection.
     box.addEventListener('click', (e) => {
-      const head = e.target.closest('.u-head');
-      if (!head) return;
-      const card = head.closest('[data-user]');
-      const bodyEl = card.querySelector('.u-body');
-      const chev = card.querySelector('.u-chev');
-      const opening = bodyEl.classList.toggle('hidden');
-      if (chev) chev.style.transform = opening ? '' : 'rotate(180deg)';
-      if (!opening && !bodyEl.dataset.loaded) {
-        bodyEl.dataset.loaded = '1';
-        loadProjects(card, card.dataset.user);
-      }
+      if (e.target.closest('.u-user-del')) return;
+      const pick = e.target.closest('.u-pick');
+      if (!pick) return;
+      const card = pick.closest('[data-user]');
+      if (card) openUser(card.dataset.user);
+    });
+    detail.addEventListener('click', (e) => {
+      if (!e.target.closest('.u-close')) return;
+      selectedUid = '';
+      paintUserSelected();
+      detail.innerHTML = '';
     });
 
     // Auto-calc Due = Budget − Paid (due field is readonly, changes only with those two).
@@ -296,14 +351,14 @@
       if (isNaN(b)) { dueEl.value = ''; return; }
       dueEl.value = String(Math.round(Math.max(0, b - (isNaN(p) ? 0 : p)) * 100) / 100);
     }
-    box.addEventListener('input', (e) => {
+    detail.addEventListener('input', (e) => {
       if (!e.target.matches || !e.target.matches('.u-bud, .u-f-paid_amount')) return;
       const form = e.target.closest('.u-add');
       if (form) recalcDue(form);
     });
 
-    // Add project for the expanded user.
-    box.addEventListener('submit', async (e) => {
+    // Add project for the selected user.
+    detail.addEventListener('submit', async (e) => {
       const form = e.target.closest('.u-add');
       if (!form) return;
       e.preventDefault();
@@ -341,6 +396,7 @@
         msg.classList.remove('hidden');
         form.reset();
         await loadProjects(card, card.dataset.user);
+        await loadUserList(); // refresh project counts on the cards
       } catch (err) {
         msg.textContent = err.message;
         msg.style.color = '#DC2626';
@@ -352,7 +408,7 @@
     });
 
     // Delete project (assigned rows; complaint-sourced need the Users-page rule via API).
-    box.addEventListener('click', async (e) => {
+    detail.addEventListener('click', async (e) => {
       const btn = e.target.closest('.u-del');
       if (!btn) return;
       const card = btn.closest('[data-user]');
@@ -372,6 +428,7 @@
           body: JSON.stringify(payload),
         });
         await loadProjects(card, card.dataset.user);
+        await loadUserList(); // refresh project counts on the cards
       } catch (err) {
         alert(err.message);
         btn.disabled = false;
@@ -396,15 +453,16 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ admin_id: admin.id, user_id: uid }),
         });
-        if (card) card.remove();
-        if (!box.querySelector('[data-user]')) {
-          box.innerHTML = '<div class="border border-navy-100 rounded p-5 text-center bg-white"><p class="text-sm text-navy-900/60">No users yet.</p></div>';
-        }
+        allUsers = allUsers.filter((x) => String(x.id) !== String(uid));
+        if (String(selectedUid) === String(uid)) { selectedUid = ''; detail.innerHTML = ''; }
+        renderUserCards();
       } catch (err) {
         alert(err.message);
         btn.disabled = false;
         btn.style.opacity = '1';
       }
     });
+
+    await loadUserList();
   });
 })();
