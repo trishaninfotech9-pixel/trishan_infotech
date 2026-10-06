@@ -322,12 +322,9 @@ function initMotion() {
     });
   }
 
-  // Navbar shadow + scroll progress (nav is injected, so look it up per scroll)
-  const bar = document.querySelector('.scroll-progress');
+  // Navbar shadow (nav is injected, so look it up per scroll)
   addEventListener('scroll', () => {
     const h = document.documentElement;
-    const max = h.scrollHeight - h.clientHeight;
-    if (bar) bar.style.transform = `scaleX(${max > 0 ? h.scrollTop / max : 0})`;
     const nav = document.getElementById('siteNav');
     const y = h.scrollTop;
     if (nav) {
@@ -387,6 +384,17 @@ function initMotion() {
       if (msg && !msg.value.trim()) msg.value = 'Project: ' + project + '\n';
     } catch (e) {}
   });
+})();
+
+// Scrollbar shows only while scrolling (mobile-style), hides when idle.
+(function setupScrollHint() {
+  const h = document.documentElement;
+  let t = null;
+  document.addEventListener('scroll', () => {
+    h.classList.add('scrolling');
+    if (t) clearTimeout(t);
+    t = setTimeout(() => h.classList.remove('scrolling'), 900);
+  }, { passive: true, capture: true });
 })();
 
 // === Skeleton loading screen (covers first paint, fades when ready) ===

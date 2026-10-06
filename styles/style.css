@@ -2,6 +2,8 @@ body {
   font-family: 'Inter', sans-serif;
   overflow-x: clip;
 }
+/* Site-wide faint bluish background (beats bg-white utilities) */
+body.bg-white { background-color: #EFF6FC; }
 
 img, iframe { max-width: 100%; }
 
@@ -20,14 +22,16 @@ img, iframe { max-width: 100%; }
 html {
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: #0C4A6E transparent;
+  scrollbar-color: transparent transparent;
 }
+html.scrolling { scrollbar-color: #0C4A6E transparent; }
 
-/* Slim site scrollbar (desktop) */
+/* Slim site scrollbar (desktop) — thumb only visible while scrolling */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #0C4A6E; border-radius: 8px; }
-::-webkit-scrollbar-thumb:hover { background: #0369A1; }
+::-webkit-scrollbar-thumb { background: transparent; border-radius: 8px; }
+html.scrolling::-webkit-scrollbar-thumb { background: #0C4A6E; }
+html.scrolling::-webkit-scrollbar-thumb:hover { background: #0369A1; }
 
 .text-gradient {
   background: linear-gradient(90deg, #0C4A6E 10%, #0369A1 50%, #0EA5E9 90%);
@@ -37,11 +41,6 @@ html {
 }
 
 /* Professional motion */
-.scroll-progress {
-  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 100;
-  background: linear-gradient(90deg, #0C4A6E, #0369A1, #0EA5E9);
-  transform: scaleX(0); transform-origin: left;
-}
 
 /* Auto-hide navbar on scroll down */
 #siteNav { transition: box-shadow .35s ease, background-color .35s ease, transform .35s ease; }
@@ -110,6 +109,51 @@ button:active { transform: scale(.97); }
 .skel-l-body.short { width: 70%; }
 @media (max-width: 900px) { .skel-side { display: none; } }
 @media (prefers-reduced-motion: reduce) { .skel-bar-dark { animation: none; } }
+
+/* Password show/hide toggles: full-height tap target pinned inside the input, zero animation */
+[data-toggle-password] {
+  top: 4px !important; bottom: 4px !important; right: 4px !important; transform: none !important;
+  width: 44px !important; min-width: 44px !important; min-height: 0 !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important;
+  cursor: pointer; transition: none !important; animation: none !important;
+}
+[data-toggle-password]:hover, [data-toggle-password]:active, [data-toggle-password]:focus { transition: none !important; animation: none !important; transform: none !important; }
+[data-toggle-password] i { pointer-events: none; }
+
+/* Professional micro-animations (JS-driven parts live in script.js / shell.js) */
+[data-toggle-password] { min-width: 44px; min-height: 44px; cursor: pointer; }
+[data-toggle-password] i { pointer-events: none; }
+@keyframes rise-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+/* Lists rise in with a soft stagger as rows render */
+#enquiryList > div, #projectList > div, #userCards > div, #responseList > div,
+#complaintList > div, #complaintList > table, #solvedList > div, #ignoredList > div {
+  animation: rise-in .5s cubic-bezier(.22,1,.36,1) both;
+}
+#enquiryList > div:nth-child(2), #projectList > div:nth-child(2), #userCards > div:nth-child(2),
+#responseList > div:nth-child(2), #solvedList > div:nth-child(2), #ignoredList > div:nth-child(2) { animation-delay: .07s; }
+#enquiryList > div:nth-child(3), #projectList > div:nth-child(3), #userCards > div:nth-child(3),
+#responseList > div:nth-child(3), #solvedList > div:nth-child(3), #ignoredList > div:nth-child(3) { animation-delay: .14s; }
+#enquiryList > div:nth-child(n+4), #projectList > div:nth-child(n+4), #userCards > div:nth-child(n+4),
+#responseList > div:nth-child(n+4), #solvedList > div:nth-child(n+4), #ignoredList > div:nth-child(n+4) { animation-delay: .21s; }
+/* Modal pops in each time it opens (display toggles re-run the animation) */
+@keyframes pop-in { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+#projModal:not(.hidden) > .relative { animation: pop-in .3s cubic-bezier(.22,1,.36,1) both; }
+/* Tactile press on primary buttons */
+.bg-navy { transition: transform .15s ease, background-color .3s; }
+.bg-navy:active { transform: scale(.97); }
+/* Admin bell rings when new notifications arrive */
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(14deg); } 40% { transform: rotate(-12deg); }
+  60% { transform: rotate(8deg); } 80% { transform: rotate(-6deg); }
+}
+.bell-ring { animation: bell-ring .65s ease; transform-origin: top center; }
+@media (prefers-reduced-motion: reduce) {
+  #enquiryList > div, #projectList > div, #userCards > div, #responseList > div,
+  #complaintList > div, #complaintList > table, #solvedList > div, #ignoredList > div,
+  #projModal:not(.hidden) > .relative, .bell-ring { animation: none; }
+  .bg-navy:active { transform: none; }
+}
 .nav-active { color: #0C4A6E; font-weight: 700; }
 #desktopNav a[data-nav]:not(.bg-navy) { position: relative; }
 #desktopNav a[data-nav]:not(.bg-navy)::after {
@@ -122,7 +166,6 @@ button:active { transform: scale(.97); }
 #desktopNav a[data-nav]:not(.bg-navy).nav-active::after { transform: scaleX(1); }
 @media (prefers-reduced-motion: reduce) {
   [data-animate] { opacity: 1 !important; }
-  .scroll-progress { display: none; }
   .service-card:hover { transform: none; }
   .service-card:hover .bg-navy-50 { transform: none; }
 }

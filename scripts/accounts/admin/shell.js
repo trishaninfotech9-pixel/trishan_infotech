@@ -106,6 +106,13 @@
     const bellBtn = document.getElementById('adminBellBtn');
     const bellCount = document.getElementById('adminBellCount');
     const notifDrop = document.getElementById('adminNotifDrop');
+    let lastNotifTotal = -1; // -1 = first load (no ring yet)
+    function ringBell() {
+      if (!bellBtn || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      bellBtn.classList.remove('bell-ring');
+      void bellBtn.offsetWidth; // restart the keyframes
+      bellBtn.classList.add('bell-ring');
+    }
     async function loadNotifs() {
       if (!admin || !admin.id || !bellCount || !notifDrop) return;
       try {
@@ -123,6 +130,8 @@
         const total = items.length + enqs.length + signups.length;
         bellCount.textContent = total > 99 ? '99+' : String(total);
         bellCount.classList.toggle('hidden', total === 0);
+        if (lastNotifTotal !== -1 && total > lastNotifTotal) ringBell();
+        lastNotifTotal = total;
         const esc2 = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         const fullName = (o) => [o.first_name, o.middle_name, o.last_name].filter(Boolean).join(' ');
         notifDrop.innerHTML = '<div class="admin-notif-head">Notifications (' + total + ')</div>' +
