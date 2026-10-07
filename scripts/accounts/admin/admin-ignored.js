@@ -1,9 +1,9 @@
-// pages/accounts/admin/all_ignore_complaint.html logic: ignored table + unignore + delete.
+// pages/accounts/admin/all_ignore_complaint logic: ignored table + unignore + delete.
 (function () {
   document.addEventListener('DOMContentLoaded', async () => {
     let admin = null;
     try { admin = JSON.parse(localStorage.getItem('trishan_admin') || 'null'); } catch (e) { admin = null; }
-    if (!admin) { location.href = 'admin.html'; return; }
+    if (!admin) { location.href = 'admin'; return; }
     document.getElementById('adminIgnoredName').textContent = admin.username || 'Admin';
 
     const list = document.getElementById('ignoredList');
@@ -33,17 +33,30 @@
     }
     const trashSVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#DC2626" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3V2h11v1z"/></svg>';
 
+    const search = (typeof trishanSearchBox === 'function') ? trishanSearchBox('[data-search-box]') : null;
+    const searchQ = () => (search && search.value.trim().toLowerCase()) || '';
+    // User search: filter by username, project, description, response.
+    const matchComplaint = (c) => {
+      const q = searchQ();
+      if (!q) return true;
+      const hay = (c.username || [c.first_name, c.middle_name, c.last_name].filter(Boolean).join(' ')) + ' ' +
+        (c.project_name || '') + ' ' + ((c.issues || []).map((i) => i.description).join(' ')) + ' ' +
+        ((c.responses || []).map((r) => r.response).join(' '));
+      return hay.toLowerCase().indexOf(q) !== -1;
+    };
+
     async function load() {
       list.innerHTML = '<p class="text-sm text-navy-900/60 text-center">Loading…</p>';
       try {
         const res = await fetch('../../../api/accounts/admin/all-complaints.php?admin_id=' + encodeURIComponent(admin.id) + '&filter=ignored');
         const body = await res.json().catch(() => null);
         if (!body || !body.ok) throw new Error((body && body.error) || 'Failed to load.');
-        if (!body.complaints.length) {
-          list.innerHTML = '<div class="border border-navy-100 rounded p-5 text-center"><p class="text-sm text-navy-900/70"><i class="bi bi-eye-slash me-1"></i>No ignored complaints.</p></div>';
+        const items = (body.complaints || []).filter(matchComplaint);
+        if (!items.length) {
+          list.innerHTML = '<div class="border border-navy-100 rounded p-5 text-center"><p class="text-sm text-navy-900/70"><i class="bi bi-eye-slash me-1"></i>' + (searchQ() ? 'No complaints match your search.' : 'No ignored complaints.') + '</p></div>';
           return;
         }
-        const parts = body.complaints.map((c) => {
+        const parts = items.map((c) => {
           const username = esc(c.username || [c.first_name, c.middle_name, c.last_name].filter(Boolean).join(' '));
           const rawDesc = (c.issues || []).map((i) => i.description).join(' ');
           const description = (c.issues || []).length
@@ -155,6 +168,8 @@
         btn.style.opacity = '1';
       }
     });
+
+    if (search) search.addEventListener('input', load);
 
     load();
   });

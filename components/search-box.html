@@ -1,0 +1,14 @@
+<!-- Reusable search-box component (canonical markup reference).
+     Preferred usage is the JS builder in scripts/script.js, which renders
+     this exact markup so every page stays identical:
+
+       HTML:  <div data-search-box data-placeholder="Search by name, email or phone…"></div>
+       JS:    const search = trishanSearchBox('[data-search-box]');
+              if (search) search.addEventListener('input', () => render(search.value.trim().toLowerCase()));
+
+     Layout/width classes belong on the slot div (page-controlled).
+     The builder is idempotent: calling it twice on the same slot reuses the input. -->
+<div class="relative">
+  <i class="bi bi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-900/40 text-sm" aria-hidden="true"></i>
+  <input type="search" aria-label="Search" placeholder="Search…" autocomplete="off" class="border border-navy-100 rounded pl-10 pr-3.5 py-2.5 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">
+</div>

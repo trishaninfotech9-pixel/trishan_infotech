@@ -1,14 +1,14 @@
-// pages/accounts/admin/users.html logic: user cards + search, click a card to
-// open users_page.html for that user. Delete stays inline on each card.
+// pages/accounts/admin/users logic: user cards + search, click a card to
+// open users_page for that user. Delete stays inline on each card.
 (function () {
   document.addEventListener('DOMContentLoaded', async () => {
     let admin = null;
     try { admin = JSON.parse(localStorage.getItem('trishan_admin') || 'null'); } catch (e) { admin = null; }
-    if (!admin) { location.href = 'admin.html'; return; }
+    if (!admin) { location.href = 'admin'; return; }
     document.getElementById('adminUsersName').textContent = admin.username || 'Admin';
 
     const box = document.getElementById('userCards');
-    const search = document.getElementById('userSearch');
+    const search = (typeof trishanSearchBox === 'function') ? trishanSearchBox('[data-search-box]') : null;
     let allUsers = [];
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const trashSVG = '<i class="bi bi-trash3 text-red-500" style="font-size:17px"></i>';
@@ -63,7 +63,7 @@
         const n = +u.project_count || 0;
         return '<div class="ucard bg-white border border-navy-100 rounded-xl p-4 sm:p-5 shadow-sm hover:border-navy-700 hover:shadow transition" data-user="' + u.id + '">' +
           '<div class="w-full flex items-center gap-2">' +
-            '<a href="users_page.html?user_id=' + u.id + '" class="flex-1 flex items-center gap-3 text-left min-w-0">' +
+            '<a href="users_page?user_id=' + u.id + '" class="flex-1 flex items-center gap-3 text-left min-w-0">' +
               '<span class="w-10 h-10 shrink-0 rounded-full bg-navy-50 text-navy font-extrabold flex items-center justify-center">' + esc(name.trim().charAt(0).toUpperCase() || '?') + '</span>' +
               '<span class="min-w-0 flex-1"><span class="block font-bold text-navy leading-snug break-words">' + esc(name) + '</span>' +
               '<span class="block text-[12px] text-navy-900/50 break-all">' + esc(u.email || '') + '</span>' +

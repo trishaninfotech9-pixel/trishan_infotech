@@ -1,11 +1,11 @@
-// pages/response.html logic: list my complaints with admin responses.
+// pages/response logic: list my complaints with admin responses.
 (function () {
   document.addEventListener('DOMContentLoaded', async () => {
     let user = null;
     let admin = null;
     try { user = JSON.parse(localStorage.getItem('trishan_user') || 'null'); } catch (e) { user = null; }
     try { admin = JSON.parse(localStorage.getItem('trishan_admin') || 'null'); } catch (e) { admin = null; }
-    if (!user && !admin) { location.href = 'login.html'; return; }
+    if (!user && !admin) { location.href = 'login'; return; }
     document.getElementById('respName').textContent = (user && user.first_name) || (admin && admin.username) || 'User';
 
     const list = document.getElementById('responseList');
@@ -51,7 +51,7 @@
           '</div>';
         }).join('') + '</div></div>';
       if (!body.complaints.length && !updates.length && !(ebody && ebody.ok && (ebody.enquiries || []).length)) {
-        list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-navy-900/70"><i class="bi bi-inbox me-1"></i>No complaints yet.</p><a href="complaint.html" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-gold-600 hover:text-navy transition"><i class="bi bi-flag"></i>Go to Complaint box</a></div>';
+        list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-navy-900/70"><i class="bi bi-inbox me-1"></i>No complaints yet.</p><a href="complaint" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-gold-600 hover:text-navy transition"><i class="bi bi-flag"></i>Go to Complaint box</a></div>';
         return;
       }
       const enquiries = (ebody && ebody.ok && ebody.enquiries) || [];
@@ -104,7 +104,7 @@
       const msg = esc(err.message);
       const needLogin = /login|not found/i.test(err.message || '');
       list.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center"><p class="text-sm text-red-600">' + msg + '</p>' +
-        (needLogin ? '<a href="login.html" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-gold-600 hover:text-navy transition">Login again →</a>' : '') + '</div>';
+        (needLogin ? '<a href="login" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-gold-600 hover:text-navy transition">Login again →</a>' : '') + '</div>';
     }
   });
 })();

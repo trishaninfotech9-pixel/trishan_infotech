@@ -1,9 +1,9 @@
-// pages/accounts/users/details.html logic: project details + its complaints, or picker.
+// pages/accounts/users/details logic: project details + its complaints, or picker.
 (function () {
   document.addEventListener('DOMContentLoaded', async () => {
     let user = null;
     try { user = JSON.parse(localStorage.getItem('trishan_user') || 'null'); } catch (e) { user = null; }
-    if (!user) { location.href = 'login.html'; return; }
+    if (!user) { location.href = 'login'; return; }
 
     const body = document.getElementById('detailsBody');
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -90,7 +90,7 @@
         const fmtBudget = (b) => (b !== null && b !== '' && b !== undefined) ? '₹' + esc(b) : '<span class="text-navy-900/40">—</span>';
         const cell = 'border border-navy-100 px-4 py-4 text-[15px] text-navy-900/80 break-words';
         const rows = mp.projects.map((p) =>
-          '<tr class="hover:bg-navy-50/60 transition cursor-pointer" data-href="details.html?project=' + encodeURIComponent(p.project_name) + '">' +
+          '<tr class="hover:bg-navy-50/60 transition cursor-pointer" data-href="details?project=' + encodeURIComponent(p.project_name) + '">' +
             '<td class="' + cell + '">' + (p.pd_id ? esc(p.pd_id) : '<span class="text-navy-900/40">—</span>') + '</td>' +
             '<td class="' + cell + ' font-semibold text-navy">' + esc(p.username || '') + '</td>' +
             '<td class="' + cell + '">' + esc(p.email || '') + '</td>' +
@@ -102,7 +102,7 @@
           '</tr>'
         ).join('');
         const cards = mp.projects.map((p) =>
-          '<a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="block border border-navy-100 rounded p-4 bg-white space-y-1.5 text-sm">' +
+          '<a href="details?project=' + encodeURIComponent(p.project_name) + '" class="block border border-navy-100 rounded p-4 bg-white space-y-1.5 text-sm">' +
             '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">ID</span><span class="min-w-0 font-semibold text-navy break-words text-right">' + (p.pd_id ? esc(p.pd_id) : '—') + '</span></div>' +
             '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">Username</span><span class="min-w-0 font-semibold text-navy break-words text-right">' + esc(p.username || '') + '</span></div>' +
             '<div class="flex justify-between gap-2"><span class="shrink-0 text-navy-900/50">Email</span><span class="min-w-0 break-all text-right">' + esc(p.email || '') + '</span></div>' +
@@ -212,7 +212,7 @@
               '<p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50 mb-2">Complaint history (' + mine.length + ')</p>' +
               '<div class="space-y-2">' + history + '</div>' +
             '</div>' +
-            '<a href="complaint.html?project=' + encodeURIComponent(name) + '" class="bg-navy text-white text-sm font-semibold px-5 py-2.5 rounded hover:bg-navy-700 transition inline-flex items-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
+            '<a href="complaint?project=' + encodeURIComponent(name) + '" class="bg-navy text-white text-sm font-semibold px-5 py-2.5 rounded hover:bg-navy-700 transition inline-flex items-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
           '</div>' +
         '</div>';
     } catch (err) {

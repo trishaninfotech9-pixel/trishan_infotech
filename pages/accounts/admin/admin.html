@@ -15,8 +15,8 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
-<link rel="stylesheet" href="../../../styles/style.css?v=10">
-<script src="../../../scripts/script.js?v=8" defer></script>
+<link rel="stylesheet" href="../../../styles/style.css?v=15">
+<script src="../../../scripts/script.js?v=9" defer></script>
 <script defer>
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('adminLoginForm');
@@ -46,7 +46,7 @@
           } catch (err) {}
           msg.textContent = 'Admin login successful. Redirecting…';
           msg.classList.remove('hidden');
-          setTimeout(() => { location.href = 'dashboard.html'; }, 1000);
+          setTimeout(() => { location.href = 'dashboard'; }, 1000);
         } else {
           msg.textContent = (body && body.error) || 'Login failed.';
           msg.classList.remove('hidden');
@@ -66,8 +66,8 @@
 <!-- BODY START: all visible page content lives inside the body tag -->
 
 <!-- ================= HEADER ================= -->
-<!-- HEADER: site navbar (injected from components/header.html) -->
-<!-- NAVBAR (shared: components/header.html) -->
+<!-- HEADER: site navbar (injected from components/header) -->
+<!-- NAVBAR (shared: components/header) -->
 <div data-component="header" data-page="login"></div>
 
 <!-- ================= MAIN CONTENT ================= -->
@@ -103,8 +103,8 @@
 </section>
 
 <!-- ================= FOOTER ================= -->
-<!-- FOOTER: site footer (injected from components/footer.html) -->
-<!-- FOOTER (shared: components/footer.html) -->
+<!-- FOOTER: site footer (injected from components/footer) -->
+<!-- FOOTER (shared: components/footer) -->
 <div data-component="footer" class="mt-auto"></div>
 
 </body>

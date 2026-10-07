@@ -1,9 +1,9 @@
-// pages/accounts/admin/project_details.html logic: full client project details.
+// pages/accounts/admin/project_details logic: full client project details.
 (function () {
   document.addEventListener('DOMContentLoaded', async () => {
     let admin = null;
     try { admin = JSON.parse(localStorage.getItem('trishan_admin') || 'null'); } catch (e) { admin = null; }
-    if (!admin) { location.href = 'admin.html'; return; }
+    if (!admin) { location.href = 'admin'; return; }
 
     const box = document.getElementById('pdBody');
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -16,7 +16,7 @@
     const uid = (q.get('user_id') || '').trim();
     const name = (q.get('project') || '').trim().slice(0, 150);
     if (!uid || !name) {
-      box.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center bg-white"><p class="text-sm text-navy-900/60">Pick a project from the list to see its details.</p><a href="all_project.html" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-gold-600 hover:text-navy transition">All Project →</a></div>';
+      box.innerHTML = '<div class="border border-navy-100 rounded p-4 text-center bg-white"><p class="text-sm text-navy-900/60">Pick a project from the list to see its details.</p><a href="all_project" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-gold-600 hover:text-navy transition">All Project →</a></div>';
       return;
     }
 

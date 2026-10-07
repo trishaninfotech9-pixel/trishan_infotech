@@ -1,9 +1,9 @@
-// pages/accounts/users/enquiry.html logic: guard, welcome, prefill, submit question.
+// pages/accounts/users/enquiry logic: guard, welcome, prefill, submit question.
 (function () {
   document.addEventListener('DOMContentLoaded', () => {
     let user = null;
     try { user = JSON.parse(localStorage.getItem('trishan_user') || 'null'); } catch (e) { user = null; }
-    if (!user) { location.href = 'login.html'; return; }
+    if (!user) { location.href = 'login'; return; }
 
     document.getElementById('userFirstName').textContent = user.first_name || 'User';
     const full = [user.first_name, user.middle_name, user.last_name].filter(Boolean).join(' ');
@@ -23,7 +23,7 @@
 
     const params = new URLSearchParams(location.search);
     const preProject = (params.get('project') || '').trim().slice(0, 150);
-    if (!preProject) { location.href = 'projects.html'; return; }
+    if (!preProject) { location.href = 'projects'; return; }
     const projectEl = document.getElementById('eProject');
     projectEl.value = preProject;
     projectEl.readOnly = true;
@@ -50,7 +50,7 @@
         const body = await res.json().catch(() => null);
         if (body && body.ok) {
           note.style.color = '';
-          note.innerHTML = '<i class="bi bi-check-circle me-1"></i>Your enquiry has been submitted. Read the reply on the <a class="underline font-semibold" href="response.html">Response page</a>.';
+          note.innerHTML = '<i class="bi bi-check-circle me-1"></i>Your enquiry has been submitted. Read the reply on the <a class="underline font-semibold" href="response">Response page</a>.';
           note.classList.remove('hidden');
           document.getElementById('eQuestion').value = '';
         } else {

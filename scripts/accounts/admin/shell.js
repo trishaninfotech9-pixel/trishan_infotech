@@ -1,4 +1,4 @@
-// Admin dashboard shell: injects components/admin-shell.html, wraps content,
+// Admin dashboard shell: injects components/admin-shell, wraps content,
 // highlights the active section, fills the admin chip + stat cards, wires logout.
 (function () {
   const BASE = '../../../';
@@ -9,7 +9,7 @@
     document.body.classList.add('has-admin-shell');
 
     try {
-      const res = await fetch(BASE + 'components/admin-shell.html');
+      const res = await fetch(BASE + 'components/admin-shell');
       if (!res.ok) throw new Error('shell HTTP ' + res.status);
       holder.innerHTML = (await res.text()).split('{{BASE}}').join(BASE);
     } catch (e) {
@@ -90,7 +90,7 @@
         else {
           try { localStorage.removeItem('trishan_user'); localStorage.removeItem('trishan_admin'); } catch (err) {}
         }
-        location.href = BASE + 'index.html';
+        location.href = BASE + 'index';
       });
     });
 
@@ -137,19 +137,19 @@
         notifDrop.innerHTML = '<div class="admin-notif-head">Notifications (' + total + ')</div>' +
           (total
             ? signups.slice(0, 20).map((u) =>
-                '<a class="admin-notif-item" data-kind="user" data-seen-id="' + u.id + '" href="' + BASE + 'pages/accounts/admin/users.html">' +
+                '<a class="admin-notif-item" data-kind="user" data-seen-id="' + u.id + '" href="' + BASE + 'pages/accounts/admin/users">' +
                   '<span><span class="t">New user: ' + esc2(fullName(u)) + '</span><br><span class="s">' + esc2(u.email || u.phone || '') + '</span></span>' +
                   '<i class="bi bi-chevron-right" style="color:#5F7E97"></i></a>'
               ).join('') +
               items.slice(0, 20).map((c) => {
                 const nm = esc2(c.username || fullName(c));
-                return '<a class="admin-notif-item" data-kind="complaint" data-seen-id="' + c.id + '" href="' + BASE + 'pages/accounts/admin/all_pending_complaint.html?focus=' + c.id + '">' +
+                return '<a class="admin-notif-item" data-kind="complaint" data-seen-id="' + c.id + '" href="' + BASE + 'pages/accounts/admin/all_pending_complaint?focus=' + c.id + '">' +
                   '<span><span class="t">' + esc2(c.project_name) + '</span><br><span class="s">' + nm + '</span></span>' +
                   '<i class="bi bi-chevron-right" style="color:#5F7E97"></i></a>';
               }).join('') +
               enqs.slice(0, 20).map((q) => {
                 const nm = esc2(q.username || q.name);
-                return '<a class="admin-notif-item" data-kind="enquiry" data-seen-id="' + q.id + '" href="' + BASE + 'pages/accounts/admin/all_enquiry.html">' +
+                return '<a class="admin-notif-item" data-kind="enquiry" data-seen-id="' + q.id + '" href="' + BASE + 'pages/accounts/admin/all_enquiry">' +
                   '<span><span class="t">Enquiry: ' + esc2(q.project_name || 'Website') + '</span><br><span class="s">' + nm + '</span></span>' +
                   '<i class="bi bi-chevron-right" style="color:#5F7E97"></i></a>';
               }).join('')

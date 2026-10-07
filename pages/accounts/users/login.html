@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="Trishan Infotech">
 <meta property="og:title" content="Login | Trishan Infotech, Chinsurah Hooghly">
 <meta property="og:description" content="Login to your Trishan Infotech account with your phone number and password.">
-<meta property="og:url" content="https://trishaninfotech.in/pages/accounts/users/login.html">
+<meta property="og:url" content="https://trishaninfotech.in/pages/accounts/users/login">
 <meta property="og:image" content="https://trishaninfotech.in/images/logo.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Login | Trishan Infotech, Chinsurah Hooghly">
@@ -24,7 +24,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
-<link rel="stylesheet" href="../../../styles/style.css?v=10">
+<link rel="stylesheet" href="../../../styles/style.css?v=15">
 <style>
   /* Login page only: compact header/footer so card fits without scroll/cut */
   @media (min-width: 768px) {
@@ -33,14 +33,14 @@
     footer .max-w-7xl { padding-top: 10px !important; padding-bottom: 10px !important; }
   }
 </style>
-<script src="../../../scripts/script.js?v=8" defer></script>
+<script src="../../../scripts/script.js?v=9" defer></script>
 <script src="../../../scripts/accounts/users/auth.js" defer></script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
 <!-- BODY START: all visible page content lives inside the body tag -->
 
 <!-- ================= HEADER ================= -->
-<!-- NAVBAR (shared: components/header.html) -->
+<!-- NAVBAR (shared: components/header) -->
 <div data-component="header" data-page="login"></div>
 
 <!-- ================= MAIN CONTENT ================= -->
@@ -70,12 +70,12 @@
       <p id="loginMsg" class="hidden text-[13px] text-center mt-2"></p>
     </form>
 
-    <p class="text-[13px] text-navy-900/70 text-center mt-3">Don't have an account? <a href="create_account.html" class="font-semibold text-gold-600 hover:text-navy transition">Create a new account</a></p>
+    <p class="text-[13px] text-navy-900/70 text-center mt-3">Don't have an account? <a href="create_account" class="font-semibold text-gold-600 hover:text-navy transition">Create a new account</a></p>
   </div>
 </section>
 
 <!-- ================= FOOTER ================= -->
-<!-- FOOTER (shared: components/footer.html) -->
+<!-- FOOTER (shared: components/footer) -->
 <div data-component="footer" class="mt-auto"></div>
 
 </body>

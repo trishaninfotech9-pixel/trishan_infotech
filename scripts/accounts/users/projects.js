@@ -1,9 +1,9 @@
-// pages/accounts/users/projects.html logic: my assigned projects from database.
+// pages/accounts/users/projects logic: my assigned projects from database.
 (function () {
   document.addEventListener('DOMContentLoaded', async () => {
     let user = null;
     try { user = JSON.parse(localStorage.getItem('trishan_user') || 'null'); } catch (e) { user = null; }
-    if (!user) { location.href = 'login.html'; return; }
+    if (!user) { location.href = 'login'; return; }
     document.getElementById('projName').textContent = user.first_name || 'User';
 
     const list = document.getElementById('projectList');
@@ -95,7 +95,7 @@
         const det = p.details ? String(p.details) : '';
         const detHtml = !det ? '' :
           det.length <= 150 ? '<p class="text-[13px] text-navy-900/70 leading-relaxed break-words mb-1">' + esc(det) + '</p>' :
-          '<div class="clamp-wrap mb-1"><p class="clamp-text clamp-3 text-[13px] text-navy-900/70 leading-relaxed">' + esc(det) + '</p><a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="clamp-btn inline-block">Show more</a></div>';
+          '<div class="clamp-wrap mb-1"><p class="clamp-text clamp-3 text-[13px] text-navy-900/70 leading-relaxed">' + esc(det) + '</p><a href="details?project=' + encodeURIComponent(p.project_name) + '" class="clamp-btn inline-block">Show more</a></div>';
         const pd = p.pd || {};
         const money = (v) => (v !== null && v !== '' && v !== undefined) ? '₹' + esc(v) : '';
         const dt = (v) => v ? esc(v) : '';
@@ -127,9 +127,9 @@
             detHtml +
             (extra ? '<div class="my-2">' + extra + '</div>' : '') +
             '<div class="mt-4 flex gap-2.5 flex-wrap">' +
-              '<a href="details.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 min-w-[90px] border border-navy-100 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-info-circle"></i>Details</a>' +
-              '<a href="complaint.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 min-w-[90px] bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
-              '<a href="enquiry.html?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 min-w-[90px] border border-navy-700 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-envelope-paper"></i>Enquiry</a>' +
+              '<a href="details?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 min-w-[90px] border border-navy-100 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-info-circle"></i>Details</a>' +
+              '<a href="complaint?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 min-w-[90px] bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-700 transition inline-flex items-center justify-center gap-2"><i class="bi bi-flag"></i>Complaint</a>' +
+              '<a href="enquiry?project=' + encodeURIComponent(p.project_name) + '" class="flex-1 min-w-[90px] border border-navy-700 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2"><i class="bi bi-envelope-paper"></i>Enquiry</a>' +
             '</div>' +
             '<div class="relative mt-2.5">' +
               '<button type="button" class="logmenu-toggle w-full border border-navy-100 text-navy text-sm font-semibold px-4 py-2.5 rounded hover:bg-navy-50 transition inline-flex items-center justify-center gap-2" data-project="' + esc(p.project_name) + '"><i class="bi bi-list-ul"></i>Log Menu<i class="bi bi-chevron-down text-xs"></i></button>' +

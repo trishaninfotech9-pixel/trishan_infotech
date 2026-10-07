@@ -1,11 +1,11 @@
-// pages/accounts/admin/users_page.html logic: one user's projects + add project.
+// pages/accounts/admin/users_page logic: one user's projects + add project.
 (function () {
   document.addEventListener('DOMContentLoaded', async () => {
     let admin = null;
     try { admin = JSON.parse(localStorage.getItem('trishan_admin') || 'null'); } catch (e) { admin = null; }
-    if (!admin) { location.href = 'admin.html'; return; }
+    if (!admin) { location.href = 'admin'; return; }
     const uid = (new URLSearchParams(location.search).get('user_id') || '').trim();
-    if (!uid) { location.href = 'users.html'; return; }
+    if (!uid) { location.href = 'users'; return; }
 
     const head = document.getElementById('upHead');
     const grid = document.getElementById('upProjects');
@@ -98,7 +98,7 @@
       const bodyEl = document.getElementById('projModalBody');
       bodyEl.innerHTML =
         '<p class="font-extrabold text-xl text-navy break-words pr-8">' + esc(p.project_name) + '</p>' +
-        '<p class="text-[13px] text-navy-900/60">' + esc(fmtDate(p.created_at)) + (p.open ? (p.complaint_id && p.page ? ' • <a href="' + p.page + '.html?focus=' + p.complaint_id + '" class="font-semibold text-gold-600 hover:underline">open complaint</a>' : ' • <span class="font-semibold text-gold-600">open complaint</span>') : '') + '</p>' +
+        '<p class="text-[13px] text-navy-900/60">' + esc(fmtDate(p.created_at)) + (p.open ? (p.complaint_id && p.page ? ' • <a href="' + p.page + '?focus=' + p.complaint_id + '" class="font-semibold text-gold-600 hover:underline">open complaint</a>' : ' • <span class="font-semibold text-gold-600">open complaint</span>') : '') + '</p>' +
         (p.details ? '<div><p class="text-[11px] font-bold uppercase tracking-wide text-navy-900/50 mb-1">Details</p><p class="text-sm text-navy-900/80 leading-relaxed break-words">' + esc(p.details) + '</p></div>' : '') +
         ((p.budget !== null && p.budget !== '' && p.budget !== undefined) ? '<p class="text-sm font-bold text-navy">Budget: ₹' + esc(p.budget) + '</p>' : '') +
         (extra ? '<div>' + extra + '</div>' : '') +
@@ -326,7 +326,7 @@
     try {
       const body = await api('../../../api/accounts/admin/list-users.php?admin_id=' + encodeURIComponent(admin.id));
       account = (body.users || []).find((x) => String(x.id) === String(uid)) || null;
-      if (!account) { location.href = 'users.html'; return; }
+      if (!account) { location.href = 'users'; return; }
       const nm = [account.first_name, account.middle_name, account.last_name].filter(Boolean).join(' ') || 'User';
       const contact = [account.email, account.phone].filter(Boolean).join(' • ');
       head.innerHTML =
@@ -343,7 +343,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ admin_id: admin.id, user_id: uid }),
           });
-          location.href = 'users.html';
+          location.href = 'users';
         } catch (err) { alert(err.message); }
       });
     } catch (err) {

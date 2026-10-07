@@ -15,14 +15,14 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
-<link rel="stylesheet" href="../../../styles/style.css?v=10">
-<script src="../../../scripts/script.js?v=8" defer></script>
+<link rel="stylesheet" href="../../../styles/style.css?v=15">
+<script src="../../../scripts/script.js?v=9" defer></script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
 <!-- BODY START: all visible page content lives inside the body tag -->
 
 <!-- ================= HEADER ================= -->
-<!-- NAVBAR (shared: components/header.html) -->
+<!-- NAVBAR (shared: components/header) -->
 <div data-component="header" data-page="login"></div>
 
 <!-- ================= MAIN CONTENT ================= -->
@@ -34,7 +34,7 @@
   </div>
   <!-- LOGIN TYPE CARDS -->
   <div class="grid sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
-    <a href="login.html" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block text-center" data-animate="fade-up" data-delay="0">
+    <a href="login" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block text-center" data-animate="fade-up" data-delay="0">
       <div class="w-11 h-11 rounded bg-navy-50 flex items-center justify-center mb-6 mx-auto">
         <i class="bi bi-person text-navy text-xl"></i>
       </div>
@@ -42,7 +42,7 @@
       <p class="text-sm text-navy-900/80 leading-relaxed mb-5">Login with your phone number or email to submit and track complaints.</p>
       <span class="text-sm font-semibold text-gold-600">Continue →</span>
     </a>
-    <a href="../admin/admin.html" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block text-center" data-animate="fade-up" data-delay="100">
+    <a href="../admin/admin" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block text-center" data-animate="fade-up" data-delay="100">
       <div class="w-11 h-11 rounded bg-navy-50 flex items-center justify-center mb-6 mx-auto">
         <i class="bi bi-shield-lock text-navy text-xl"></i>
       </div>
@@ -54,7 +54,7 @@
 </section>
 
 <!-- ================= FOOTER ================= -->
-<!-- FOOTER (shared: components/footer.html) -->
+<!-- FOOTER (shared: components/footer) -->
 <div data-component="footer" class="mt-auto"></div>
 
 </body>

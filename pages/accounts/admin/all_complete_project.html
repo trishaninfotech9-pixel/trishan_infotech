@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Complete Project | Admin | Trishan Infotech</title>
+<title>Complete Projects | Admin | Trishan Infotech</title>
 <link rel="icon" type="image/png" href="../../../images/logo.png">
 <meta name="description" content="Admin view of completed projects per user.">
 <meta name="robots" content="noindex, nofollow">
@@ -15,10 +15,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
-<link rel="stylesheet" href="../../../styles/style.css?v=10">
-<script src="../../../scripts/script.js?v=8" defer></script>
+<link rel="stylesheet" href="../../../styles/style.css?v=15">
+<script src="../../../scripts/script.js?v=9" defer></script>
 <script>window.ADMIN_PROJECT_MODE = 'complete';</script>
-<script src="../../../scripts/accounts/admin/admin-projects.js?v=8" defer></script>
+<script src="../../../scripts/accounts/admin/admin-projects.js?v=9" defer></script>
 <script src="../../../scripts/accounts/admin/shell.js?v=4" defer></script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
@@ -36,17 +36,11 @@
     <!-- PAGE TITLE + SEARCH -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
       <div class="min-w-0">
-        <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-navy-900 mb-1.5">Complete Project</h1>
+        <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-navy-900 mb-1.5">Complete Projects</h1>
         <p class="hero-lead text-sm text-navy-900/60">Hi <span id="adminProjectsName">Admin</span>, pick a user to see all their projects.</p>
       </div>
-      <!-- USER SEARCH -->
-      <div class="w-full md:w-72 shrink-0">
-        <label for="userSearch" class="sr-only">Search users</label>
-        <div class="relative">
-          <i class="bi bi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-900/40 text-sm"></i>
-          <input type="search" id="userSearch" placeholder="Search by name, email or phone…" autocomplete="off" class="border border-navy-100 rounded pl-10 pr-3.5 py-2.5 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">
-        </div>
-      </div>
+      <!-- USER SEARCH (component: trishanSearchBox('[data-search-box]')) -->
+      <div class="w-full md:w-72 shrink-0" data-search-box data-placeholder="Search by name, email or phone…"></div>
     </div>
     <!-- USER CARDS -->
     <div id="userCards" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>

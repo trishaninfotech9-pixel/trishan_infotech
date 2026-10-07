@@ -1,4 +1,4 @@
-// Shared complaint-table renderer used by all_complaint.html and all_pending_complaint.html (filter via list data-filter).
+// Shared complaint-table renderer used by all_complaint and all_pending_complaint (filter via list data-filter).
 // stacked cards on mobile. Same classes/data-attrs in both so handlers are shared.
 // Columns: username | project_name | created_at | description | response | solved(checkbox).
 // Ticking the checkbox stores a copy in Solved page BUT the row stays here (checked).
@@ -6,7 +6,7 @@
   document.addEventListener('DOMContentLoaded', async () => {
     let admin = null;
     try { admin = JSON.parse(localStorage.getItem('trishan_admin') || 'null'); } catch (e) { admin = null; }
-    if (!admin) { location.href = 'admin.html'; return; }
+    if (!admin) { location.href = 'admin'; return; }
     document.getElementById('adminName').textContent = admin.username || 'Admin';
 
     const list = document.getElementById('complaintList');
@@ -38,18 +38,31 @@
       });
     }
 
+    const search = (typeof trishanSearchBox === 'function') ? trishanSearchBox('[data-search-box]') : null;
+    const searchQ = () => (search && search.value.trim().toLowerCase()) || '';
+    // User search: filter complaints by username, project, description, response.
+    const matchComplaint = (c) => {
+      const q = searchQ();
+      if (!q) return true;
+      const hay = (c.username || [c.first_name, c.middle_name, c.last_name].filter(Boolean).join(' ')) + ' ' +
+        (c.project_name || '') + ' ' + ((c.issues || []).map((i) => i.description).join(' ')) + ' ' +
+        ((c.responses || []).map((r) => r.response).join(' '));
+      return hay.toLowerCase().indexOf(q) !== -1;
+    };
+
     async function load() {
       list.innerHTML = '<p class="text-sm text-navy-900/60 text-center">Loading…</p>';
       try {
         const res = await fetch('../../../api/accounts/admin/all-complaints.php?admin_id=' + encodeURIComponent(admin.id) + '&filter=' + encodeURIComponent(list.dataset.filter || 'all'));
         const body = await res.json().catch(() => null);
         if (!body || !body.ok) throw new Error((body && body.error) || 'Failed to load.');
-        if (!body.complaints.length) {
-          list.innerHTML = '<div class="border border-navy-100 rounded p-5 text-center"><p class="text-sm text-navy-900/70"><i class="bi bi-inbox me-1"></i>No complaints yet.</p></div>';
+        const items = (body.complaints || []).filter(matchComplaint);
+        if (!items.length) {
+          list.innerHTML = '<div class="border border-navy-100 rounded p-5 text-center"><p class="text-sm text-navy-900/70"><i class="bi bi-inbox me-1"></i>' + (searchQ() ? 'No complaints match your search.' : 'No complaints yet.') + '</p></div>';
           return;
         }
         const readOnly = (list.dataset.filter || 'all') === 'all';
-        const parts = body.complaints.map((c) => {
+        const parts = items.map((c) => {
           const username = esc(c.username || [c.first_name, c.middle_name, c.last_name].filter(Boolean).join(' '));
           const rawDesc = (c.issues || []).map((i) => i.description).join(' ');
           const description = (c.issues || []).length
@@ -263,6 +276,8 @@
         box.disabled = false;
       }
     });
+
+    if (search) search.addEventListener('input', load);
 
     load();
   });

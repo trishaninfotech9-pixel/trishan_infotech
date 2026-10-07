@@ -5,12 +5,12 @@
   document.addEventListener('DOMContentLoaded', async () => {
     let admin = null;
     try { admin = JSON.parse(localStorage.getItem('trishan_admin') || 'null'); } catch (e) { admin = null; }
-    if (!admin) { location.href = 'admin.html'; return; }
+    if (!admin) { location.href = 'admin'; return; }
     const hello = document.getElementById('adminProjectsName');
     if (hello) hello.textContent = admin.username || 'Admin';
 
     const cards = document.getElementById('userCards');
-    const search = document.getElementById('userSearch');
+    const search = (typeof trishanSearchBox === 'function') ? trishanSearchBox('[data-search-box]') : null;
     let allUsers = [];
     let selectedUid = '';
     let selectedUname = '';
@@ -124,7 +124,7 @@
           const cdet = p.details ? String(p.details) : '';
           const detHtml = !cdet ? '<span class="text-navy-900/40">—</span>'
             : cdet.length <= 140 ? esc(cdet)
-            : esc(cdet.slice(0, 140)) + '… <a href="project_details.html?user_id=' + encodeURIComponent(uid) + '&project=' + encodeURIComponent(p.project_name) + '" class="clamp-btn">see more</a>';
+            : esc(cdet.slice(0, 140)) + '… <a href="project_details?user_id=' + encodeURIComponent(uid) + '&project=' + encodeURIComponent(p.project_name) + '" class="clamp-btn">see more</a>';
           return '<div class="border border-navy-100 rounded-xl p-4 bg-white space-y-2 text-sm">' +
             '<div class="flex items-start justify-between gap-2">' +
               '<p class="font-bold text-navy leading-snug break-words min-w-0 flex-1">' + esc(p.project_name) + '</p>' + statusPill +

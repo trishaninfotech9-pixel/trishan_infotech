@@ -1,10 +1,18 @@
-<!-- Shared site footer. {{BASE}} becomes '' on index.html, '../' inside pages/. -->
+<!-- Shared site footer. {{BASE}} becomes '' on index, '../' inside pages/. -->
 <footer class="border-t border-navy-100 mt-auto">
-  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-2 flex flex-col md:flex-row items-center justify-between gap-2">
-    <p class="text-xs text-navy-900/60 text-center md:text-left">© 2026 Trishan Infotech, Chinsurah, Hooghly. All rights reserved.</p>
-    <div class="flex gap-2 text-navy-900 text-sm">
-      <a href="https://www.facebook.com/trishan.infotech.9/" target="_blank" rel="noopener" aria-label="Trishan Infotech on Facebook" class="hover:text-navy p-0.5"><i class="bi bi-facebook"></i></a>
-      <a href="{{BASE}}pages/contact.html" aria-label="Contact us" class="hover:text-navy p-0.5"><i class="bi bi-envelope"></i></a>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-6 flex flex-col gap-4">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-navy-900/70">
+        <a href="{{BASE}}pages/services" class="hover:text-navy transition">Services</a>
+        <a href="{{BASE}}pages/why-us" class="hover:text-navy transition">Why Us</a>
+        <a href="{{BASE}}pages/process" class="hover:text-navy transition">Process</a>
+        <a href="{{BASE}}pages/contact" class="hover:text-navy transition">Contact</a>
+      </div>
+      <div class="flex gap-2 text-navy-900 text-sm">
+        <a href="https://www.facebook.com/trishan.infotech.9/" target="_blank" rel="noopener" aria-label="Trishan Infotech on Facebook" class="hover:text-navy p-0.5"><i class="bi bi-facebook"></i></a>
+        <a href="{{BASE}}pages/contact" aria-label="Contact us" class="hover:text-navy p-0.5"><i class="bi bi-envelope"></i></a>
+      </div>
     </div>
+    <p class="text-xs text-navy-900/60 text-center md:text-left">© 2026 Trishan Infotech, Chinsurah, Hooghly. All rights reserved.</p>
   </div>
 </footer>

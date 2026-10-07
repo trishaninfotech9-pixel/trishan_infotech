@@ -78,7 +78,7 @@
           });
           if (body && body.ok) {
             showMsg(msg, body.message + ' Redirecting to login…', false);
-            setTimeout(() => { location.href = 'login.html'; }, 1200);
+            setTimeout(() => { location.href = 'login'; }, 1200);
           } else {
             showMsg(msg, apiError(status, body, raw, 'Could not create account.'), true);
           }
@@ -114,7 +114,7 @@
               localStorage.setItem('trishan_user', JSON.stringify(u));
             } catch (e) {}
             showMsg(msg, 'Login successful. Welcome, ' + (body.user.first_name || '') + '!', false);
-            setTimeout(() => { location.href = 'projects.html'; }, 1000);
+            setTimeout(() => { location.href = 'projects'; }, 1000);
           } else {
             showMsg(msg, apiError(status, body, raw, 'Login failed.'), true);
           }

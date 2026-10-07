@@ -127,11 +127,36 @@ async function trishanLogout(base) {
   try { localStorage.removeItem('trishan_user'); localStorage.removeItem('trishan_admin'); } catch (err) {}
 }
 
-// === Shared components (components/header.html, components/header-auth.html, components/footer.html) ===
+// === Reusable search-box component ===
+// Markup lives in one place so every page renders the identical box.
+// Usage in HTML (layout classes stay on the slot, page-controlled):
+//   <div data-search-box data-placeholder="Search by name, email or phone…"></div>
+// Usage in a page script (returns the <input>, or null):
+//   const search = trishanSearchBox('[data-search-box]');
+//   if (search) search.addEventListener('input', () => render(search.value.trim().toLowerCase()));
+// A physical copy of the canonical markup (for non-JS use) lives in components/search-box.
+function trishanSearchBox(target) {
+  const mount = typeof target === 'string' ? document.querySelector(target) : target;
+  if (!mount) return null;
+  let input = mount.querySelector('input[type="search"]');
+  if (!input) {
+    const ph = mount.getAttribute('data-placeholder') || 'Search…';
+    mount.innerHTML =
+      '<div class="relative">' +
+        '<i class="bi bi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-900/40 text-sm" aria-hidden="true"></i>' +
+        '<input type="search" aria-label="Search" placeholder="' + ph.replace(/"/g, '&quot;') + '" autocomplete="off" ' +
+        'class="border border-navy-100 rounded pl-10 pr-3.5 py-2.5 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-navy-700">' +
+      '</div>';
+    input = mount.querySelector('input[type="search"]');
+  }
+  return input;
+}
+
+// === Shared components (components/header, components/header-auth, components/footer) ===
 // Pages hold <div data-component="header|footer"> placeholders; this injects the
 // shared markup once, so header/footer are edited in one place. Works over
 // http(s) — e.g. Live Preview or any host — but not via file:// browsing.
-// Logged-in users get components/header-auth.html (Complaint / Response / Logout).
+// Logged-in users get components/header-auth (Complaint / Response / Logout).
 async function loadComponents() {
   const path0 = location.pathname.replace(/\\/g, '/');
   const inUserArea = path0.indexOf('/pages/accounts/users/') !== -1;
@@ -148,14 +173,14 @@ async function loadComponents() {
   } catch (e) { loggedIn = false; }
   // Auth header only inside the account area; public pages (home, services, …) keep the public navbar.
   const path = location.pathname.replace(/\\/g, '/');
-  const isAuthPage = /\/pages\/accounts\/(users|admin)\/.+\.html$/.test(path);
+  const isAuthPage = /\/pages\/accounts\/(users|admin)\/.+\$/.test(path);
   const useAuthHeader = loggedIn && isAuthPage;
   const slot = (name) => document.querySelector('[data-component="' + name + '"]');
   if (!slot('header') && !slot('footer') && !slot('cta')) return;
   const res = await Promise.all([
-    fetch(base + (useAuthHeader ? 'components/header-auth.html' : 'components/header.html')),
-    fetch(base + 'components/footer.html'),
-    fetch(base + 'components/cta.html'),
+    fetch(base + (useAuthHeader ? 'components/header-auth' : 'components/header')),
+    fetch(base + 'components/footer'),
+    fetch(base + 'components/cta'),
   ]);
   if (!res[0].ok || !res[1].ok || !res[2].ok) throw new Error('component HTTP ' + res[0].status + '/' + res[1].status + '/' + res[2].status);
   const headerHTML = (await res[0].text()).split('{{BASE}}').join(base);
@@ -177,12 +202,12 @@ async function loadComponents() {
   if (window.__watchReveals) window.__watchReveals(document);
 }
 
-// === Auth navbar wiring: header-auth.html is injected for logged-in users;
+// === Auth navbar wiring: header-auth is injected for logged-in users;
 // here we only redirect login pages and wire the shared Logout button. ===
 function updateAuthNav(base, current, inPages, loggedIn, adminOnly) {
   const path = location.pathname.replace(/\\/g, '/');
-  if (loggedIn && (path.endsWith('/login.html') || path.endsWith('/create_account.html') || path.endsWith('/login-choice.html'))) {
-    location.href = base + 'pages/accounts/' + (adminOnly ? 'admin/dashboard.html' : 'users/projects.html');
+  if (loggedIn && (path.endsWith('/login') || path.endsWith('/create_account') || path.endsWith('/login-choice'))) {
+    location.href = base + 'pages/accounts/' + (adminOnly ? 'admin/dashboard' : 'users/projects');
     return;
   }
   if (!loggedIn) return;
@@ -190,7 +215,7 @@ function updateAuthNav(base, current, inPages, loggedIn, adminOnly) {
       e.preventDefault();
       document.body.classList.remove('menu-open');
       await trishanLogout(base);
-      location.href = base + 'index.html';
+      location.href = base + 'index';
     });
   });
   // Unread admin-response badge (per user — fetched with their own user_id).

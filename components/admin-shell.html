@@ -1,7 +1,7 @@
 <!-- Admin dashboard shell (ERP style): sidebar + topbar. {{BASE}} is replaced by shell.js -->
 <div class="admin-sidebar" id="adminSidebar">
   <div class="admin-brand-row">
-    <a class="admin-brand" href="{{BASE}}pages/accounts/admin/dashboard.html">
+    <a class="admin-brand" href="{{BASE}}pages/accounts/admin/dashboard">
       <img src="{{BASE}}images/logo.png" alt="Trishan Infotech logo">
       <span><strong>Trishan Infotech</strong><small>Admin Suite</small></span>
     </a>
@@ -9,17 +9,17 @@
   </div>
   <p class="admin-label">Workspace</p>
   <nav aria-label="Admin">
-    <a data-nav="dashboard" href="{{BASE}}pages/accounts/admin/dashboard.html"><i class="bi bi-grid"></i>Dashboard</a>
-    <a data-nav="enquiry" href="{{BASE}}pages/accounts/admin/all_enquiry.html"><i class="bi bi-envelope-paper"></i>Enquiry</a>
+    <a data-nav="dashboard" href="{{BASE}}pages/accounts/admin/dashboard"><i class="bi bi-grid"></i>Dashboard</a>
+    <a data-nav="enquiry" href="{{BASE}}pages/accounts/admin/all_enquiry"><i class="bi bi-envelope-paper"></i>Enquiry</a>
     <div class="admin-group" id="complaintGroup">
       <button type="button" class="admin-parent" id="complaintParent" aria-expanded="false" aria-controls="complaintSub">
         <span class="admin-parent-label"><i class="bi bi-inbox"></i>Complaint</span><i class="bi bi-chevron-down admin-chev"></i>
       </button>
       <div class="admin-sub" id="complaintSub">
-        <a data-nav="all" href="{{BASE}}pages/accounts/admin/all_complaint.html"><i class="bi bi-list-ul"></i>All Complaint</a>
-        <a data-nav="solved" href="{{BASE}}pages/accounts/admin/all_sloved_complaint.html"><i class="bi bi-check2-circle"></i>Solved Complaint</a>
-        <a data-nav="pending" href="{{BASE}}pages/accounts/admin/all_pending_complaint.html"><i class="bi bi-clock-history"></i>Pending Complaint</a>
-        <a data-nav="ignored" href="{{BASE}}pages/accounts/admin/all_ignore_complaint.html"><i class="bi bi-eye-slash"></i>Ignored Complaint</a>
+        <a data-nav="all" href="{{BASE}}pages/accounts/admin/all_complaint"><i class="bi bi-list-ul"></i>All Complaint</a>
+        <a data-nav="solved" href="{{BASE}}pages/accounts/admin/all_solved_complaint"><i class="bi bi-check2-circle"></i>Solved Complaint</a>
+        <a data-nav="pending" href="{{BASE}}pages/accounts/admin/all_pending_complaint"><i class="bi bi-clock-history"></i>Pending Complaint</a>
+        <a data-nav="ignored" href="{{BASE}}pages/accounts/admin/all_ignore_complaint"><i class="bi bi-eye-slash"></i>Ignored Complaint</a>
       </div>
     </div>
     <div class="admin-group" id="projectGroup">
@@ -27,12 +27,12 @@
         <span class="admin-parent-label"><i class="bi bi-kanban"></i>Project</span><i class="bi bi-chevron-down admin-chev"></i>
       </button>
       <div class="admin-sub" id="projectSub">
-        <a data-nav="p-all" href="{{BASE}}pages/accounts/admin/all_project.html"><i class="bi bi-kanban"></i>All Project</a>
-        <a data-nav="p-complete" href="{{BASE}}pages/accounts/admin/all_complete_project.html"><i class="bi bi-check2-square"></i>Complete Project</a>
-        <a data-nav="p-pending" href="{{BASE}}pages/accounts/admin/all_pending_project.html"><i class="bi bi-hourglass-split"></i>Pending Project</a>
+        <a data-nav="p-all" href="{{BASE}}pages/accounts/admin/all_project"><i class="bi bi-kanban"></i>All Projects</a>
+        <a data-nav="p-complete" href="{{BASE}}pages/accounts/admin/all_complete_project"><i class="bi bi-check2-square"></i>Complete Projects</a>
+        <a data-nav="p-pending" href="{{BASE}}pages/accounts/admin/all_pending_project"><i class="bi bi-hourglass-split"></i>Pending Projects</a>
       </div>
     </div>
-    <a data-nav="users" href="{{BASE}}pages/accounts/admin/users.html"><i class="bi bi-people"></i>Users</a>
+    <a data-nav="users" href="{{BASE}}pages/accounts/admin/users"><i class="bi bi-people"></i>Users</a>
   </nav>
   <button type="button" data-logout class="admin-logout"><i class="bi bi-box-arrow-right"></i>Logout</button>
 </div>

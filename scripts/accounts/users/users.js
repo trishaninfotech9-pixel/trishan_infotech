@@ -1,10 +1,10 @@
-// pages/accounts/complaint.html logic: guard, welcome + IST date, prefill, issue blocks.
+// pages/accounts/complaint logic: guard, welcome + IST date, prefill, issue blocks.
 (function () {
   document.addEventListener('DOMContentLoaded', () => {
     // ---- Guard + welcome ----
     let user = null;
     try { user = JSON.parse(localStorage.getItem('trishan_user') || 'null'); } catch (e) { user = null; }
-    if (!user) { location.href = 'login.html'; return; }
+    if (!user) { location.href = 'login'; return; }
 
     const first = user.first_name || 'User';
     document.getElementById('userFirstName').textContent = first;
@@ -33,7 +33,7 @@
     // Project preselected from the Projects page (always locked).
     const params = new URLSearchParams(location.search);
     const preProject = (params.get('project') || '').trim().slice(0, 150);
-    if (!preProject) { location.href = 'projects.html'; return; }
+    if (!preProject) { location.href = 'projects'; return; }
     const projectEl = document.getElementById('cProject');
     projectEl.value = preProject;
     projectEl.readOnly = true;

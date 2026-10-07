@@ -57,21 +57,21 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
-<link rel="stylesheet" href="styles/style.css?v=10">
-<script src="scripts/script.js?v=8" defer></script>
+<link rel="stylesheet" href="styles/style.css?v=15">
+<script src="scripts/script.js?v=9" defer></script>
 </head>
 <body class="bg-white text-navy-900">
 <!-- BODY START: all visible page content lives inside the body tag -->
 
 <!-- ================= HEADER ================= -->
-<!-- NAVBAR (shared: components/header.html) -->
+<!-- NAVBAR (shared: components/header) -->
 <div data-component="header" data-page="home"></div>
 
 <!-- ================= MAIN CONTENT ================= -->
 <!-- HERO SECTION -->
 <!-- HERO -->
 <section class="border-b border-navy-100 overflow-hidden">
-  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14 grid md:grid-cols-2 gap-10 items-center">
     <div class="max-w-3xl">
       <p class="hero-badge text-gold-600 font-semibold text-sm mb-4">IT Software Services Company — Chinsurah, Hooghly</p>
       <h1 class="hero-title text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-gradient mb-6">
@@ -81,12 +81,19 @@
         Trishan Infotech is an IT software services company located in Chinsurah, Hooghly, West Bengal. We specialize in software solutions, mobile app development, web development, and cyber security networking.
       </p>
       <div class="hero-actions flex flex-wrap gap-4">
-        <a href="pages/services.html" class="border border-navy-100 text-navy font-semibold px-6 py-3 rounded hover:bg-navy-50 transition">View Services</a>
+        <a href="pages/services" class="border border-navy-100 text-navy font-semibold px-6 py-3 rounded hover:bg-navy-50 transition">View Services</a>
       </div>
       <div class="hero-stats flex flex-wrap gap-6 sm:gap-10 mt-12 pt-8 border-t border-navy-100">
         <div><p class="text-2xl font-extrabold text-navy"><span data-count="18">0</span>+</p><p class="text-xs text-navy-900/70 mt-1">Years in operation</p></div>
         <div><p class="text-2xl font-extrabold text-navy"><span data-count="150">0</span>+</p><p class="text-xs text-navy-900/70 mt-1">Projects delivered</p></div>
         <div><p class="text-2xl font-extrabold text-navy"><span data-count="20">0</span>+</p><p class="text-xs text-navy-900/70 mt-1">Countries served</p></div>
+      </div>
+    </div>
+    <div class="relative hidden md:block" data-animate="zoom-in" aria-hidden="true">
+      <div class="hero-lights">
+        <span class="hl hl-a"></span>
+        <span class="hl hl-b"></span>
+        <span class="hl hl-c"></span>
       </div>
     </div>
   </div>
@@ -101,7 +108,7 @@
     <p class="text-navy-900/80 leading-relaxed">Services, reasons to choose us, our process, and how to reach us — each on its own page.</p>
   </div>
   <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-    <a href="pages/services.html" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block" data-animate="fade-up" data-delay="0">
+    <a href="pages/services" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block" data-animate="fade-up" data-delay="0">
       <div class="w-11 h-11 rounded bg-navy-50 flex items-center justify-center mb-6">
         <i class="bi bi-code-slash text-navy text-xl"></i>
       </div>
@@ -109,7 +116,7 @@
       <p class="text-sm text-navy-900/80 leading-relaxed mb-5">Web development, mobile apps, cyber security networking, and system architecture.</p>
       <span class="text-sm font-semibold text-gold-600">Learn more →</span>
     </a>
-    <a href="pages/why-us.html" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block" data-animate="fade-up" data-delay="100">
+    <a href="pages/why-us" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block" data-animate="fade-up" data-delay="100">
       <div class="w-11 h-11 rounded bg-navy-50 flex items-center justify-center mb-6">
         <i class="bi bi-shield-check text-navy text-xl"></i>
       </div>
@@ -117,7 +124,7 @@
       <p class="text-sm text-navy-900/80 leading-relaxed mb-5">Security-first builds, scalable design, on-time delivery, and ongoing support.</p>
       <span class="text-sm font-semibold text-gold-600">Learn more →</span>
     </a>
-    <a href="pages/process.html" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block" data-animate="fade-up" data-delay="200">
+    <a href="pages/process" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block" data-animate="fade-up" data-delay="200">
       <div class="w-11 h-11 rounded bg-navy-50 flex items-center justify-center mb-6">
         <i class="bi bi-list-check text-navy text-xl"></i>
       </div>
@@ -125,7 +132,7 @@
       <p class="text-sm text-navy-900/80 leading-relaxed mb-5">Discovery, design, development, deployment &amp; support — clear milestones.</p>
       <span class="text-sm font-semibold text-gold-600">Learn more →</span>
     </a>
-    <a href="pages/contact.html" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block" data-animate="fade-up" data-delay="300">
+    <a href="pages/contact" class="service-card border border-navy-100 rounded p-8 hover:border-navy-700 transition block" data-animate="fade-up" data-delay="300">
       <div class="w-11 h-11 rounded bg-navy-50 flex items-center justify-center mb-6">
         <i class="bi bi-envelope text-navy text-xl"></i>
       </div>
@@ -137,11 +144,11 @@
 </section>
 
 <!-- CTA BANNER -->
-<!-- CTA (shared: components/cta.html) -->
+<!-- CTA (shared: components/cta) -->
 <div data-component="cta"></div>
 
 <!-- ================= FOOTER ================= -->
-<!-- FOOTER (shared: components/footer.html) -->
+<!-- FOOTER (shared: components/footer) -->
 <div data-component="footer"></div>
 
 </body>

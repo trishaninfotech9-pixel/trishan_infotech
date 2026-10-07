@@ -420,6 +420,46 @@ button:active {
   }
 }
 
+/* Hero ambient lights: soft glowing orbs + floating glass badges (decorative) */
+.hero-lights { position: relative; min-height: 430px; overflow: visible; }
+.hl { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: .55; animation: hl-drift 9s ease-in-out infinite alternate; }
+.hl-a { width: 280px; height: 280px; top: -30px; right: 6%; background: radial-gradient(circle, #BAE6FD, transparent 70%); }
+.hl-b { width: 230px; height: 230px; bottom: -10px; left: 0; background: radial-gradient(circle, #A5F3D6, transparent 70%); animation-delay: 2s; }
+.hl-c { width: 190px; height: 190px; top: 34%; left: 30%; background: radial-gradient(circle, #DDD6FE, transparent 70%); animation-delay: 4s; }
+@keyframes hl-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-24px, 22px) scale(1.08); }
+}
+@keyframes hl-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.hl-card {
+  position: absolute; display: flex; align-items: center; gap: 12px;
+  background: rgba(255, 255, 255, .75); backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(224, 242, 254, .9); border-radius: 16px;
+  padding: 14px 18px; box-shadow: 0 18px 44px -14px rgba(12, 74, 110, .28);
+  animation: hl-float 5s ease-in-out infinite;
+}
+.hl-card i { font-size: 22px; color: #0284C7; }
+.hl-card strong { display: block; font-size: 15px; color: #0C4A6E; }
+.hl-card span span, .hl-card div span { font-size: 12px; color: rgba(12, 74, 110, .6); }
+.hc-1 { top: 8%; left: 4%; }
+.hc-2 { top: 42%; right: 0; animation-delay: 1.6s; }
+.hc-3 { bottom: 6%; left: 16%; animation-delay: 3.1s; }
+.hc-3 i { color: #059669; }
+@media (prefers-reduced-motion: reduce) {
+  .hl, .hl-card { animation: none; }
+}
+
+/* Muted-text contrast floor (WCAG AA for small text) */
+.text-navy-900\/40 { color: rgba(12, 74, 110, .65) !important; }
+.text-navy-900\/50 { color: rgba(12, 74, 110, .72) !important; }
+
+/* Visible keyboard focus everywhere */
+a:focus-visible, button:focus-visible, input:focus-visible,
+textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #0284C7;
+  outline-offset: 2px;
+}
 /* Password show/hide toggles: full-height tap target pinned inside the input, zero animation */
 [data-toggle-password] {
   top: 4px !important;
@@ -1031,6 +1071,12 @@ body.admin-nav-open .admin-sidebar {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* Drawer menu scrolls internally when expanded groups exceed the viewport */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-bottom: 8px;
 }
 
 .admin-sidebar nav a,

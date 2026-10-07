@@ -192,7 +192,7 @@ class project extends dbcon {
       $key = strtolower(trim($row['project_name']));
       if (isset($linkMap[$key])) continue;
       if ((int)$row['is_ignored'] === 1) $sec = 'all_ignore_complaint';
-      elseif ((int)$row['is_solved'] === 1) $sec = 'all_sloved_complaint';
+      elseif ((int)$row['is_solved'] === 1) $sec = 'all_solved_complaint';
       elseif (!(int)$row['has_resp']) $sec = 'all_pending_complaint';
       else $sec = 'all_complaint';
       $linkMap[$key] = ['complaint_id' => (int)$row['id'], 'page' => $sec];

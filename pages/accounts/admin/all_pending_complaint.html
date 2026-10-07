@@ -15,9 +15,9 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
-<link rel="stylesheet" href="../../../styles/style.css?v=10">
-<script src="../../../scripts/script.js?v=8" defer></script>
-<script src="../../../scripts/accounts/admin/admin-panel.js?v=3" defer></script>
+<link rel="stylesheet" href="../../../styles/style.css?v=15">
+<script src="../../../scripts/script.js?v=9" defer></script>
+<script src="../../../scripts/accounts/admin/admin-panel.js?v=4" defer></script>
 <script src="../../../scripts/accounts/admin/shell.js?v=4" defer></script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
@@ -32,9 +32,15 @@
 <!-- PENDING COMPLAINTS SECTION -->
 <section class="max-w-7xl mx-auto px-6 lg:px-10 py-10 md:py-14 w-full">
   <div class="max-w-6xl mx-auto" id="adminPanelWrap">
-    <!-- PAGE TITLE -->
-    <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-navy-900 mb-1.5">Pending Complaint</h1>
-    <p class="hero-lead text-sm text-navy-900/60 mb-6">Hi <span id="adminName">Admin</span>, reply below and tick the checkbox to mark a complaint as solved.</p>
+    <!-- PAGE TITLE + SEARCH -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div class="min-w-0">
+        <h1 class="hero-title text-2xl sm:text-3xl font-extrabold text-navy-900 mb-1.5">Pending Complaint</h1>
+        <p class="hero-lead text-sm text-navy-900/60">Hi <span id="adminName">Admin</span>, reply below and tick the checkbox to mark a complaint as solved.</p>
+      </div>
+      <!-- USER SEARCH (component: trishanSearchBox('[data-search-box]')) -->
+      <div class="w-full md:w-72 shrink-0" data-search-box data-placeholder="Search by user, project…"></div>
+    </div>
     <!-- COMPLAINT LIST -->
     <div id="complaintList" data-filter="pending" class="space-y-4"></div>
   </div>

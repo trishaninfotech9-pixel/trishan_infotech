@@ -1,9 +1,9 @@
-// pages/accounts/admin/all_enquiry.html logic: receive + reply threads, like complaint page.
+// pages/accounts/admin/all_enquiry logic: receive + reply threads, like complaint page.
 (function () {
   document.addEventListener('DOMContentLoaded', async () => {
     let admin = null;
     try { admin = JSON.parse(localStorage.getItem('trishan_admin') || 'null'); } catch (e) { admin = null; }
-    if (!admin) { location.href = 'admin.html'; return; }
+    if (!admin) { location.href = 'admin'; return; }
     const nameEl = document.getElementById('enquiryAdminName');
     if (nameEl) nameEl.textContent = admin.username || 'Admin';
 
