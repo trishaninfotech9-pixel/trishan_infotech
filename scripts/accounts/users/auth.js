@@ -48,6 +48,23 @@
     }
   }
 
+  // Brute-force lockout: disable the button with a live countdown.
+  function lockout(btn, msgEl, seconds, text) {
+    let left = Math.max(1, seconds || 0);
+    if (btn) btn.disabled = true;
+    const tick = () => {
+      showMsg(msgEl, (text || 'Too many wrong attempts.') + ' Try again in ' + left + 's.', true);
+      if (left <= 0) {
+        if (btn) { btn.disabled = false; setLoading(btn, false); }
+        showMsg(msgEl, 'You can try again now.', false);
+        return;
+      }
+      left--;
+      setTimeout(tick, 1000);
+    };
+    tick();
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     // ---- Create account ----
     const regForm = document.getElementById('createAccountForm');
@@ -100,6 +117,7 @@
         if (!loginForm.checkValidity()) { loginForm.reportValidity(); return; }
         setLoading(btn, true, 'Logging in…');
         if (msg) msg.classList.add('hidden');
+        let locked = false;
         try {
           const loginId = document.getElementById('loginPhone').value.trim();
           const { status, body, raw } = await postJSON('../../../api/accounts/users/login.php', {
@@ -115,13 +133,16 @@
             } catch (e) {}
             showMsg(msg, 'Login successful. Welcome, ' + (body.user.first_name || '') + '!', false);
             setTimeout(() => { location.href = 'projects'; }, 1000);
+          } else if (body && body.retry_after) {
+            locked = true;
+            lockout(btn, msg, +body.retry_after, body.error);
           } else {
             showMsg(msg, apiError(status, body, raw, 'Login failed.'), true);
           }
         } catch (err) {
           showMsg(msg, 'Cannot reach server. Start Apache in XAMPP.', true);
         } finally {
-          setLoading(btn, false);
+          if (!locked) setLoading(btn, false);
         }
       });
     }

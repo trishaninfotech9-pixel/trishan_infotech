@@ -173,7 +173,7 @@ async function loadComponents() {
   } catch (e) { loggedIn = false; }
   // Auth header only inside the account area; public pages (home, services, …) keep the public navbar.
   const path = location.pathname.replace(/\\/g, '/');
-  const isAuthPage = /\/pages\/accounts\/(users|admin)\/.+\$/.test(path);
+  const isAuthPage = /\/pages\/accounts\/(users|admin)\/[^\/]+\/?$/.test(path);
   const useAuthHeader = loggedIn && isAuthPage;
   const slot = (name) => document.querySelector('[data-component="' + name + '"]');
   if (!slot('header') && !slot('footer') && !slot('cta')) return;

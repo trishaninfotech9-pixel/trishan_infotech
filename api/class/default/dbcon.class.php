@@ -411,6 +411,23 @@ class dbcon {
       FOREIGN KEY (enquiry_id) REFERENCES enquiries(id) ON DELETE CASCADE,
       FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL
     )");
+    // Brute-force protection: per-identifier failure counters + lockouts.
+    // locked_until is a UNIX timestamp (INT) so PHP/MySQL timezone settings
+    // can never skew the wait math.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS login_attempts (
+      login_key VARCHAR(190) NOT NULL PRIMARY KEY,
+      kind VARCHAR(10) NOT NULL DEFAULT '',
+      failures INT NOT NULL DEFAULT 0,
+      locks INT NOT NULL DEFAULT 0,
+      locked_until BIGINT NULL DEFAULT NULL
+    )");
+    // Earlier revision stored wall-clock TIMESTAMPs (timezone-skew prone);
+    // normalize once to UNIX timestamps. Harmless if already BIGINT.
+    try { $pdo->exec("ALTER TABLE login_attempts MODIFY COLUMN locked_until BIGINT NULL DEFAULT NULL"); }
+    catch (PDOException $e) {}
+    // Heal rows written in the wall-clock era (values ~2e13 >> real UNIX ~1.8e9).
+    try { $pdo->exec("UPDATE login_attempts SET locked_until = NULL WHERE locked_until > 9999999999"); }
+    catch (PDOException $e) {}
     // New-user signups notify the admin bell. Backfill runs ONLY on the migrate
     // that first creates the column (existing rows predate notifications);
     // later signups keep DEFAULT 0 so the bell fires for them.
