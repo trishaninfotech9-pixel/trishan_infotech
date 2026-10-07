@@ -43,12 +43,18 @@
             items.push({ t: c.created_at || '', kind: 'complaint' });
             if (+c.is_solved === 1 && c.solved_at) items.push({ t: c.solved_at, kind: 'solved' });
           });
+          (b.enquiries || []).forEach((q) => {
+            items.push({ t: q.created_at || '', kind: 'enquiry' });
+            if (+q.has_resp === 1 && q.replied_at) items.push({ t: q.replied_at, kind: 'enquiry-replied' });
+          });
           (b.events || []).forEach((v) => items.push({ t: v.created_at || '', kind: v.event }));
           items.sort((a, c2) => String(a.t).localeCompare(String(c2.t)));
           if (!items.length) { menu.innerHTML = '<p class="px-4 py-3 text-sm text-navy-900/50">No log entries yet.</p>'; return; }
           const row = (icon, text, t) => '<div class="flex items-center gap-2.5 px-4 py-2.5 border-b border-navy-100/70 last:border-0"><i class="' + icon + ' text-navy shrink-0"></i><span class="flex-1 min-w-0 text-[13px] text-navy-900/80 break-words">' + text + '</span><span class="shrink-0 text-[12px] text-navy-900/50 whitespace-nowrap">' + esc(fmtDateTime(t)) + '</span></div>';
           menu.innerHTML = items.map((it) =>
             it.kind === 'complaint' ? row('bi bi-flag', 'Complaint sent', it.t) :
+            it.kind === 'enquiry' ? row('bi bi-envelope-paper', 'Enquiry sent', it.t) :
+            it.kind === 'enquiry-replied' ? row('bi bi-reply', 'Enquiry replied', it.t) :
             it.kind === 'process' ? row('bi bi-hourglass-split', 'Work under process', it.t) :
             it.kind === 'complete' ? row('bi bi-check-circle', 'Completed', it.t) :
             it.kind === 'solved' ? row('bi bi-check2-circle', 'Complaint solved', it.t) :

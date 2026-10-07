@@ -15,9 +15,9 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
-<link rel="stylesheet" href="../../../styles/style.css?v=10">
+<link rel="stylesheet" href="../../../styles/style.css?v=14">
 <script src="../../../scripts/script.js?v=8" defer></script>
-<script src="../../../scripts/accounts/admin/dashboard.js" defer></script>
+<script src="../../../scripts/accounts/admin/dashboard.js?v=4" defer></script>
 <script src="../../../scripts/accounts/admin/shell.js?v=4" defer></script>
 </head>
 <body class="bg-white text-navy-900 min-h-screen flex flex-col">
@@ -38,31 +38,31 @@
     <p class="hero-lead text-sm text-navy-900/60 mb-6">Hi <span id="dashAdminName">Admin</span>, here is what is happening across your users today.</p>
 
     <!-- STAT CARDS -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-      <div class="bg-white border border-navy-100 rounded-2xl p-5 shadow-sm">
-        <div class="flex items-start justify-between mb-4"><span class="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center"><i class="bi bi-people text-navy"></i></span><span class="text-[11px] font-semibold text-navy-900/40">live</span></div>
-        <p class="text-3xl font-extrabold text-navy-900" data-stat="users">–</p>
-        <p class="text-[13px] text-navy-900/60 mt-1">Total Users</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
+      <div class="metric-card" data-link="users.html" role="link" tabindex="0">
+        <div class="flex items-start justify-between mb-4"><span class="metric-ico" style="background:#E0F2FE"><i class="bi bi-people" style="color:#0284C7"></i></span><span class="live-badge"><span class="live-dot"></span>Live</span></div>
+        <p class="metric-num" data-stat="users">–</p>
+        <p class="metric-label">Total Users</p>
       </div>
-      <div class="bg-white border border-navy-100 rounded-2xl p-5 shadow-sm">
-        <div class="flex items-start justify-between mb-4"><span class="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center"><i class="bi bi-inbox text-navy"></i></span><span class="text-[11px] font-semibold text-navy-900/40">live</span></div>
-        <p class="text-3xl font-extrabold text-navy-900" data-stat="pending">–</p>
-        <p class="text-[13px] text-navy-900/60 mt-1">New Complaints</p>
+      <div class="metric-card" data-link="all_pending_complaint.html" role="link" tabindex="0">
+        <div class="flex items-start justify-between mb-4"><span class="metric-ico" style="background:#FEE2E2"><i class="bi bi-inbox" style="color:#DC2626"></i></span><span class="live-badge"><span class="live-dot"></span>Live</span></div>
+        <p class="metric-num" data-stat="pending">–</p>
+        <p class="metric-label">New Complaints</p>
       </div>
-      <div class="bg-white border border-navy-100 rounded-2xl p-5 shadow-sm">
-        <div class="flex items-start justify-between mb-4"><span class="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center"><i class="bi bi-check-circle text-navy"></i></span><span class="text-[11px] font-semibold text-navy-900/40">live</span></div>
-        <p class="text-3xl font-extrabold text-navy-900" data-stat="solved">–</p>
-        <p class="text-[13px] text-navy-900/60 mt-1">Solved</p>
+      <div class="metric-card" data-link="all_sloved_complaint.html" role="link" tabindex="0">
+        <div class="flex items-start justify-between mb-4"><span class="metric-ico" style="background:#D1FAE5"><i class="bi bi-check-circle" style="color:#059669"></i></span><span class="live-badge"><span class="live-dot"></span>Live</span></div>
+        <p class="metric-num" data-stat="solved">–</p>
+        <p class="metric-label">Solved</p>
       </div>
-      <div class="bg-white border border-navy-100 rounded-2xl p-5 shadow-sm">
-        <div class="flex items-start justify-between mb-4"><span class="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center"><i class="bi bi-chat-left-text text-navy"></i></span><span class="text-[11px] font-semibold text-navy-900/40">live</span></div>
-        <p class="text-3xl font-extrabold text-navy-900" data-stat="responses">–</p>
-        <p class="text-[13px] text-navy-900/60 mt-1">Total Responses</p>
+      <div class="metric-card" data-link="all_complaint.html" role="link" tabindex="0">
+        <div class="flex items-start justify-between mb-4"><span class="metric-ico" style="background:#E0E7FF"><i class="bi bi-chat-left-text" style="color:#4F46E5"></i></span><span class="live-badge"><span class="live-dot"></span>Live</span></div>
+        <p class="metric-num" data-stat="responses">–</p>
+        <p class="metric-label">Total Responses</p>
       </div>
-      <div class="bg-white border border-navy-100 rounded-2xl p-5 shadow-sm">
-        <div class="flex items-start justify-between mb-4"><span class="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center"><i class="bi bi-envelope-paper text-navy"></i></span><span class="text-[11px] font-semibold text-navy-900/40">live</span></div>
-        <p class="text-3xl font-extrabold text-navy-900" data-stat="enquiries">–</p>
-        <p class="text-[13px] text-navy-900/60 mt-1">Total Enquiries</p>
+      <div class="metric-card" data-link="all_enquiry.html" role="link" tabindex="0">
+        <div class="flex items-start justify-between mb-4"><span class="metric-ico" style="background:#EDE9FE"><i class="bi bi-envelope-paper" style="color:#7C3AED"></i></span><span class="live-badge"><span class="live-dot"></span>Live</span></div>
+        <p class="metric-num" data-stat="enquiries">–</p>
+        <p class="metric-label">Total Enquiries</p>
       </div>
     </div>
   </div>

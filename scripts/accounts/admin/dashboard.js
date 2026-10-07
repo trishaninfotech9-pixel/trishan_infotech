@@ -10,5 +10,12 @@
       document.getElementById('adminDashDate').textContent =
         new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', weekday: 'long', day: 'numeric', month: 'long' }).format(new Date()).toUpperCase();
     } catch (e) {}
+    // Metric cards navigate to their area (keyboard accessible too).
+    document.querySelectorAll('.metric-card[data-link]').forEach((card) => {
+      card.addEventListener('click', () => { location.href = card.dataset.link; });
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); location.href = card.dataset.link; }
+      });
+    });
   });
 })();

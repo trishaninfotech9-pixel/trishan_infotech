@@ -284,6 +284,9 @@ class project extends dbcon {
     $complaints = $stmt->fetchAll();
     $stmt = $pdo->prepare('SELECT event, created_at FROM project_status_log WHERE user_id = ? AND LOWER(project_name) = LOWER(?) ORDER BY created_at');
     $stmt->execute([$user_id, $project]);
-    return ['complaints' => $complaints, 'events' => $stmt->fetchAll()];
+    $events = $stmt->fetchAll();
+    $stmt = $pdo->prepare('SELECT e.id, e.created_at, EXISTS(SELECT 1 FROM enquiry_responses r WHERE r.enquiry_id = e.id) AS has_resp, (SELECT MAX(r.created_at) FROM enquiry_responses r WHERE r.enquiry_id = e.id) AS replied_at FROM enquiries e WHERE e.user_id = ? AND LOWER(e.project_name) = LOWER(?) ORDER BY created_at');
+    $stmt->execute([$user_id, $project]);
+    return ['complaints' => $complaints, 'events' => $events, 'enquiries' => $stmt->fetchAll()];
   }
 }
