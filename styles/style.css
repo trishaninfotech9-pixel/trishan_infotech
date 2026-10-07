@@ -1213,6 +1213,7 @@ body.admin-nav-open .admin-sidebar {
 .clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   overflow-wrap: anywhere;
@@ -1221,6 +1222,7 @@ body.admin-nav-open .admin-sidebar {
 .clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   overflow-wrap: anywhere;
@@ -1229,6 +1231,7 @@ body.admin-nav-open .admin-sidebar {
 .clamp-wrap.open .clamp-text {
   display: block;
   -webkit-line-clamp: unset;
+  line-clamp: none;
 }
 
 .clamp-btn {
