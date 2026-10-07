@@ -562,12 +562,13 @@ textarea:focus-visible, select:focus-visible {
   animation: pop-in .3s cubic-bezier(.22, 1, .36, 1) both;
 }
 
-/* Tactile press on primary buttons */
+/* Tactile press on primary buttons (links/buttons only — never layout blocks) */
 .bg-navy {
   transition: transform .15s ease, background-color .3s;
 }
 
-.bg-navy:active {
+a.bg-navy:active,
+button.bg-navy:active {
   transform: scale(.97);
 }
 
@@ -758,7 +759,8 @@ textarea:focus-visible, select:focus-visible {
     animation: none;
   }
 
-  .bg-navy:active {
+  a.bg-navy:active,
+  button.bg-navy:active {
     transform: none;
   }
 

@@ -1,18 +1,41 @@
-<!-- Shared site footer. {{BASE}} becomes '' on index, '../' inside pages/. -->
-<footer class="border-t border-navy-100 mt-auto">
-  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-6 flex flex-col gap-4">
-    <div class="flex flex-col md:flex-row items-center justify-between gap-3">
-      <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-navy-900/70">
-        <a href="{{BASE}}pages/services" class="hover:text-navy transition">Services</a>
-        <a href="{{BASE}}pages/why-us" class="hover:text-navy transition">Why Us</a>
-        <a href="{{BASE}}pages/process" class="hover:text-navy transition">Process</a>
-        <a href="{{BASE}}pages/contact" class="hover:text-navy transition">Contact</a>
+<!-- Shared site footer. {{BASE}} becomes '' on index.html, '../' inside pages/. -->
+<footer class="mt-auto text-white bg-navy">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 pt-12 pb-6">
+    <div class="grid gap-10 md:grid-cols-3">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <img src="{{BASE}}images/logo.png" alt="Trishan Infotech logo" class="h-11 w-auto rounded-lg bg-white p-1">
+          <span class="leading-tight"><strong class="block text-white">Trishan Infotech</strong><small class="text-white/60 text-xs">Chinsurah, Hooghly</small></span>
+        </div>
+        <p class="text-sm text-white/70 leading-relaxed max-w-xs">Software solutions, web &amp; mobile apps, and secure IT systems — built locally, supported personally.</p>
+        <div class="flex gap-2 mt-4">
+          <a href="https://www.facebook.com/trishan.infotech.9/" target="_blank" rel="noopener" aria-label="Trishan Infotech on Facebook" class="w-9 h-9 rounded-full inline-flex items-center justify-center bg-white/10 hover:bg-white/20 transition"><i class="bi bi-facebook text-sm"></i></a>
+          <a href="{{BASE}}pages/contact" aria-label="Contact us" class="w-9 h-9 rounded-full inline-flex items-center justify-center bg-white/10 hover:bg-white/20 transition"><i class="bi bi-envelope text-sm"></i></a>
+          <a href="tel:+918910467073" aria-label="Call Trishan Infotech" class="w-9 h-9 rounded-full inline-flex items-center justify-center bg-white/10 hover:bg-white/20 transition"><i class="bi bi-telephone text-sm"></i></a>
+        </div>
       </div>
-      <div class="flex gap-2 text-navy-900 text-sm">
-        <a href="https://www.facebook.com/trishan.infotech.9/" target="_blank" rel="noopener" aria-label="Trishan Infotech on Facebook" class="hover:text-navy p-0.5"><i class="bi bi-facebook"></i></a>
-        <a href="{{BASE}}pages/contact" aria-label="Contact us" class="hover:text-navy p-0.5"><i class="bi bi-envelope"></i></a>
+      <nav aria-label="Footer" class="text-center">
+        <p class="text-xs font-bold uppercase tracking-widest text-white/50 mb-4">Explore</p>
+        <ul class="space-y-2.5 text-sm font-medium">
+          <li><a href="{{BASE}}pages/services" class="text-white/80 hover:text-white transition">Services</a></li>
+          <li><a href="{{BASE}}pages/why-us" class="text-white/80 hover:text-white transition">Why Us</a></li>
+          <li><a href="{{BASE}}pages/process" class="text-white/80 hover:text-white transition">Process</a></li>
+          <li><a href="{{BASE}}pages/contact" class="text-white/80 hover:text-white transition">Contact</a></li>
+        </ul>
+      </nav>
+      <div>
+        <p class="text-xs font-bold uppercase tracking-widest text-white/50 mb-4">Reach us</p>
+        <ul class="space-y-2.5 text-sm text-white/80">
+          <li class="flex gap-2.5"><i class="bi bi-geo-alt mt-0.5 shrink-0"></i>Chinsurah, Hooghly, West Bengal, India</li>
+          <li class="flex gap-2.5"><i class="bi bi-clock mt-0.5 shrink-0"></i>Mon–Fri: 9:30 AM – 6:30 PM</li>
+          <li class="flex gap-2.5"><i class="bi bi-envelope mt-0.5 shrink-0"></i><span class="break-all">trishaninfotech9@gmail.com</span></li>
+          <li class="flex gap-2.5"><i class="bi bi-telephone mt-0.5 shrink-0"></i>+91 89104 67073</li>
+        </ul>
       </div>
     </div>
-    <p class="text-xs text-navy-900/60 text-center md:text-left">© 2026 Trishan Infotech, Chinsurah, Hooghly. All rights reserved.</p>
+    <div class="border-t border-white/15 mt-8 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p class="text-xs text-white/60">© 2026 Trishan Infotech, Chinsurah, Hooghly. All rights reserved.</p>
+      <p class="text-xs text-white/50">Replies within one business day.</p>
+    </div>
   </div>
 </footer>
